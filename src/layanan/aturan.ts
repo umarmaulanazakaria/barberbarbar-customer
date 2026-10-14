@@ -64,6 +64,7 @@ export function izinCustomer(b: Booking, p?: Ringkasan) {
     jadwalUlang:
       !!p &&
       b.status === "CONFIRMED" &&
+      Date.parse(b.mulaiPada) - Date.now() >= 3600000 &&
       !b.pesananId &&
       terakhir?.status === "REJECTED" &&
       !!terakhir.diputuskanPada &&

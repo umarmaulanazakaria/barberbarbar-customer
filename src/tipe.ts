@@ -53,6 +53,7 @@ export type Booking = {
   total: number;
   nominalDp: number;
   catatan: string | null;
+  alasanPenolakan: string | null;
   dibuatPada: string;
   dikonfirmasiPada: string | null;
   deadlineDp: string | null;
