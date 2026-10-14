@@ -26,6 +26,14 @@ audit, tetapi tidak ada perangkat/AVD. Tidak membuat atau memasang emulator.
 
 ## Fitur dan aturan
 
+Pada langkah jadwal, tekan field **Pilih Barber** untuk membuka daftar pencarian.
+Ketik nama (huruf besar/kecil tidak dibedakan), lalu pilih barber atau
+**Barber siapa saja**. Modal menutup setelah pemilihan; tombol tutup/Back tidak
+mengubah pilihan. Pilihan tetap pada draf saat maju/mundur. Flow reschedule
+memakai komponen yang sama. Jika barber tidak lagi tersedia, pilih ulang;
+ketersediaan jadwal final tetap diperiksa server. Tidak ada konfigurasi atau
+dependency baru untuk dropdown ini.
+
 - Empat tab Beranda, Booking, Riwayat, Akun; logo asli, navy/slate/indigo, terang.
 - Katalog publik layanan/barber aktif, tanpa promosi atau identitas palsu.
 - Login email/telepon, daftar201 atau pengaitan202 pending admin. JWT CUSTOMER
@@ -82,7 +90,9 @@ npm.cmd run build:android
 npm.cmd test
 ```
 
-Tes membutuhkan backend terkompilasi pada folder sebelah dan DB localhost.
+`npm test` menjalankan tes dropdown11 kelompok dengan adapter hook/native host,
+kemudian tes integrasi customer14 kelompok. Uji adapter bukan device UI.
+Tes integrasi membutuhkan backend terkompilasi pada folder sebelah dan DB localhost.
 Credential backend dibaca hanya di memori; provider Midtrans diganti MOCK dalam
 proses. Fixture dummy acak dibersihkan terarah dan snapshot22 model dibandingkan.
 Jalankan suite DB berurutan. SecureStore/AppState menggunakan adapter; bukan

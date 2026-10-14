@@ -1,5 +1,66 @@
 # Audit aplikasi mobile customer
 
+## Patch UX pemilihan barber, 15 Oktober 2026
+
+Baseline fae408253cdeddb72a68bb831915a781c4bbcf56, branch
+feature/project5-integration, working tree Project5 bersih sebelum patch.
+Pemilihan barber pada booking baru dan reschedule kini satu field tertutup yang
+membuka modal bawah dengan pencarian nama, bukan deretan tombol panjang.
+Komponen reusable src/komponen/PilihanBerpencarian.tsx memakai Modal/FlatList/
+KeyboardAvoidingView/Pressable/TextInput serta icon/safe-area yang sudah ada.
+Tidak memasang dependency baru; package/lock dependency tetap sama. package.json
+hanya menambahkan suite komponen sebelum tes integrasi customer pada npm test.
+
+Nama barber berasal dari useBarber → GET /public/barbers, whitelist id/nama aktif.
+Tidak ada data nama hardcode atau metadata rating/foto. Kontrak belum mempunyai
+endpoint daftar eligibility menurut jadwal; kapasitas/overlap tetap validasi
+backend saat submit. Patch tidak membuat algoritma eligibility baru.
+"Barber siapa saja" tetap null; barber spesifik tetap ID number. Controlled value
+disimpan pada draf parent sehingga maju/mundur tidak menghapus pilihan. Pilihan
+yang hilang dari katalog tidak diganti diam-diam ke null: field memberi pesan
+pilih ulang, dan ringkasan tidak menyebutnya barber siapa saja. Validasi submit
+existing tetap berlaku. Multi-service/qty, harga/member/durasi/lifecycle/payment/
+refund/scheduler/auth/realtime tidak diubah.
+
+Modal: pencarian trim dan case-insensitive, radio selected, tutup setelah memilih,
+reset pencarian saat dibuka kembali, opsi umum tetap tersedia ketika mencari,
+"Barber tidak ditemukan", loading/error/retry, disabled, tombol close/backdrop
+dan onRequestClose Android. Close/cancel tidak memanggil perubahan nilai. Warna
+navy/indigo existing; area sentuh >=48, daftar virtual, maxHeight responsif,
+padding safe-area, keyboardShouldPersistTaps handled, drag dismiss dan
+KeyboardAvoidingView Android height/iOS padding. Ini konfigurasi source yang
+diperiksa, belum bukti keyboard/native accessibility bekerja di HP.
+
+| Pemeriksaan patch | Hasil |
+|---|---|
+| TypeScript strict |PASS|
+| Expo dependency check |PASS, dependencies up to date|
+| Android Hermes export |PASS,1072 modul, sekitar2.8MB,37assets|
+| Komponen aktual TSX dengan adapter hook/native host |11 kelompok PASS|
+| Open/close/back/cancel/search/no-result/select/change/null |PASS adapter|
+| Selected controlled setelah remount; API ID/null pada payload |PASS adapter + integrasi|
+| Loading/error/retry/disabled/barber hilang |PASS adapter|
+| Integrasi API customer + multiservice/qty + reschedule |14 kelompok PASS, provider MOCK|
+| Cleanup fixture |22 model domain existing identik|
+| Tap/back/keyboard/scroll panjang/safe area/navigasi native |DEFERRED: ADB devices dan emulator -list-avds kosong|
+
+scripts/test-pilihan-barber.mjs mengeksekusi komponen TSX aktual dengan adapter
+state/host; bukan renderer React Native atau device. Tes memastikan kedua flow
+memakai komponen yang sama. Navigasi tab/gesture native belum diuji; controlled
+state dan export saja tidak cukup untuk mengklaim device PASS. Tidak mengulang
+pembayaran Sandbox nyata. Temuan dependency/refund/PRD/device dari baseline di
+bawah tetap terbuka; patch UI tidak memperbaiki advisory dependency tersebut.
+
+Perubahan hanya Project5: komponen baru, layar Booking, dua script tes,
+package.json, README dan audit ini. Project3 staged historis Prisma dan perubahan
+format lokal Project4 src/layanan/booking.ts tetap dipertahankan, tidak diedit/
+stage/commit. src/layar/LayarTambahPelanggan.tsx tetap dilindungi.
+ZIP lama beserta manifest/checksum dipertahankan di backup-arsip sebelum arsip
+utama diperbarui. ZIP final lengkap mengikuti commit patch; checksum seluruh
+entry diverifikasi oleh script existing dan dicatat pada manifest eksternal.
+Hash commit/checksum final dilaporkan terpisah agar dokumen tidak merujuk commit
+dirinya. Tidak force push, merge main, migration atau perubahan credential.
+
 15 Oktober 2026, Asia/Jakarta. **F12 PARSIAL untuk acceptance akhir perangkat.**
 Source aplikasi Expo Android benar-benar dibuat dan terhubung ke backend Project3.
 Pengujian API/controller dan bundle lulus; tidak mengklaim seluruh interaksi UI,

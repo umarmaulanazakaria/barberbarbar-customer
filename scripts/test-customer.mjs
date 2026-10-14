@@ -69,6 +69,7 @@ try {
  const quote = mod.estimasi(draf(1),catalog,true); assert.deepEqual(quote,{subtotal:40000,diskon:4000,total:36000,dp:18000,durasi:90});
  assert.equal(mod.validasiJadwal(draf(1),90),null); assert.ok(mod.validasiJadwal({...draf(1),jam:'22:00'},90)); assert.ok(mod.validasiJadwal({...draf(1),tanggal:hari(15)},90)); const fixed=Date.parse('2026-10-15T10:00:00+07:00'); assert.ok(mod.validasiJadwal({...draf(1),tanggal:'2026-10-15',jam:'12:59'},30,fixed)); assert.equal(mod.validasiJadwal({...draf(1),tanggal:'2026-10-15',jam:'13:00'},30,fixed),null);
  assert.deepEqual(Object.keys(mod.payloadBooking(draf(1))).sort(),['barberPilihanId','catatan','items','mulaiPada']); assert.ok(!('total' in mod.payloadBooking(draf(1))));
+ assert.equal(mod.payloadBooking({...draf(1),barberPilihanId:null}).barberPilihanId,null);assert.equal(mod.payloadBooking(draf(1)).barberPilihanId,barbers[0].id);
  pass('Multiservice/qty, estimate member10%, WIB minute-level, 3jam/14hari/end23, payload tanpa nominal');
  let observed=0; const unsubscribe=mod.cache.getQueryCache().subscribe(e=>{if(e.type==='updated'&&e.query.queryKey[0]==='booking'&&e.query.state.isInvalidated)observed++;}); lepas.push(unsubscribe);
  mod.cache.setQueryData(['booking',mod.ambilSesi().versi],[]); const stop=mod.pasangRealtime();lepas.push(stop); await delay(350);
