@@ -1,0 +1,9 @@
+{
+ "expo": {
+  "name":"BARBER BARBAR Customer","slug":"barberbarbar-customer","version":"1.0.0",
+  "orientation":"portrait","userInterfaceStyle":"light","icon":"./assets/icon.png",
+  "android":{"package":"com.barberbarbar.customer","predictiveBackGestureEnabled":false},
+  "plugins":["expo-secure-store"],
+  "splash":{"image":"./assets/logo.png","resizeMode":"contain","backgroundColor":"#0F172A"}
+ }
+}

@@ -1,0 +1,20 @@
+import { useEffect, useState } from 'react';
+import { Alert, Text } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { Tumpukan } from '../navigasi';
+import { Halaman, Kartu, Kesalahan, Kolom, Lencana, Memuat, Tombol } from '../komponen/ui';
+import { gaya } from '../tema';
+import { ajukanMembership, ubahProfil } from '../layanan/api';
+import { cache } from '../layanan/cache';
+import { statusRamah } from '../layanan/aturan';
+import { useMembership, useProfil } from '../layanan/kueri';
+import { keluar, useSesi } from '../layanan/sesi';
+export function LayarAkun() {
+ const navigation = useNavigation<NativeStackNavigationProp<Tumpukan>>(), sesi = useSesi(), profil = useProfil(), member = useMembership();
+ const [nama, setNama] = useState(''), [alamat, setAlamat] = useState(''), [sibuk, setSibuk] = useState(false), [error, setError] = useState<unknown>(null);
+ useEffect(() => { if (profil.data) { setNama(profil.data.pelanggan.nama); setAlamat(profil.data.pelanggan.alamat ?? ''); } }, [profil.data]);
+ const tindakan = async (kerja: () => Promise<unknown>, pesan: string) => { if (sibuk) return; setSibuk(true); setError(null); try { await kerja(); await cache.invalidateQueries(); Alert.alert('Berhasil', pesan); } catch (e) { setError(e); } finally { setSibuk(false); } };
+ if (!sesi.token) return <Halaman><Text style={gaya.judul}>Akun Anda</Text><Kartu><Text style={gaya.teks}>Masuk untuk melihat profil, membership, dan booking Anda.</Text><Tombol judul="Masuk / Daftar" tekan={() => navigation.navigate('Masuk')} /></Kartu></Halaman>;
+ return <Halaman segarkan={() => { void profil.refetch(); void member.refetch(); }} memuat={profil.isRefetching || member.isRefetching}><Text style={gaya.judul}>Akun Anda</Text>{profil.isPending && <Memuat />}<Kesalahan error={profil.error} ulang={() => void profil.refetch()} />{profil.data && <Kartu><Text style={gaya.subjudul}>Profil</Text><Text style={gaya.redup}>{profil.data.email}{'\n'}{profil.data.pelanggan.nomorTelepon}</Text><Kolom label="Nama" value={nama} onChangeText={setNama} maxLength={100} /><Kolom label="Alamat" value={alamat} onChangeText={setAlamat} maxLength={500} multiline /><Tombol judul="Simpan profil" sibuk={sibuk} nonaktif={nama.trim().length < 2} tekan={() => void tindakan(() => ubahProfil({ nama: nama.trim(), alamat: alamat.trim() }), 'Profil Anda sudah diperbarui.')} /></Kartu>}<Kartu><Text style={gaya.subjudul}>Membership</Text>{member.isPending && <Memuat />}<Kesalahan error={member.error} ulang={() => void member.refetch()} />{member.data && <><Lencana teks={statusRamah(member.data.status)} />{member.data.status === 'ACTIVE' ? <Text style={gaya.teks}>Diskon 10% untuk booking Anda berikutnya. Diskon booking yang sudah dibuat tetap mengikuti ringkasannya.</Text> : member.data.status === 'INACTIVE' ? <Text style={gaya.teks}>Membership nonaktif. Hubungi admin untuk mengaktifkan kembali. Anda tetap bisa booking dengan harga reguler.</Text> : member.data.status === 'PENDING_APPROVAL' ? <Text style={gaya.teks}>Pengajuan Anda sedang menunggu persetujuan admin.</Text> : <Text style={gaya.teks}>Ajukan membership untuk benefit diskon booking 10% setelah disetujui admin.</Text>}{member.data.membership?.memberCode && <Text style={gaya.redup}>Nomor member · {member.data.membership.memberCode}</Text>}{member.data.permohonan?.catatanKeputusan && <Text style={gaya.redup}>{member.data.permohonan.catatanKeputusan}</Text>}{member.data.dapatMengajukan && <Tombol judul="Ajukan membership" sibuk={sibuk} tekan={() => void tindakan(ajukanMembership, 'Pengajuan Anda menunggu persetujuan admin.')} />}</>}</Kartu><Kesalahan error={error} /><Tombol judul="Bantuan password" sekunder tekan={() => navigation.navigate('LupaPassword')} /><Tombol judul="Keluar" sekunder tekan={() => Alert.alert('Keluar dari akun?', 'Data pribadi di aplikasi akan dibersihkan.', [{ text: 'Kembali', style: 'cancel' }, { text: 'Keluar', onPress: () => void keluar().catch(setError) }])} /></Halaman>;
+}
