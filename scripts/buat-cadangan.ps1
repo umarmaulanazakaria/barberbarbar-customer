@@ -14,6 +14,7 @@ foreach ($berkas in $berkasCustomer) {
  $absolut = [IO.Path]::GetFullPath((Join-Path $akarCustomer $berkas))
  if (-not $absolut.StartsWith($akarCustomer + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Source keluar dari folder aplikasi.' }
 }
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zipCustomer = [IO.Compression.ZipFile]::Open($jalurArsip, [IO.Compression.ZipArchiveMode]::Create)
 try { foreach ($berkas in $berkasCustomer) { [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipCustomer, (Join-Path $akarCustomer $berkas), ('barberbarbar-customer/' + $berkas.Replace('\','/')), [IO.Compression.CompressionLevel]::Optimal) | Out-Null } }
