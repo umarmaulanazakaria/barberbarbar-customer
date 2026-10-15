@@ -1,8 +1,8 @@
-﻿# BARBER BARBAR Customer App
+# BARBER BARBAR — Customer Mobile App
 
 Aplikasi customer untuk melihat layanan, mengajukan membership, membuat booking, dan mengikuti status layanan serta pembayaran. Aplikasi memakai backend pusat yang juga digunakan Web Management dan Mobile Staff.
 
-**Status: siap ditinjau dengan syarat; belum siap Production.** Acceptance Android dan checkout Midtrans Sandbox langsung dari aplikasi masih DEFERRED. Lihat [audit historis](docs/audit/F14-AUDIT.md) dan [audit workspace terbaru](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/WORKSPACE-CLEANUP-AUDIT.md).
+Project untuk **tugas kuliah, pembelajaran Fullstack, portofolio, dan demonstrasi lokal**; bukan aplikasi Production. Hosting berbayar bukan kebutuhan demo. Mobile berhasil menurut laporan pengguna (**USER-REPORTED**); bukti rinci UI native/checkout Android belum lengkap. Email nyata, refund historis dan advisory tetap dicatat jujur. Lihat [acceptance demo](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/DEMO-ACCEPTANCE.md).
 
 ## Teknologi dan fitur
 
@@ -73,3 +73,11 @@ Suite menguji searchable dropdown, detail, draft reschedule, sesi, booking, pemb
 - [Customer App](https://github.com/umarmaulanazakaria/barberbarbar-customer)
 
 Advisory dependency, refund historis Rp2.000, email recovery, dan sejumlah keputusan PRD masih terbuka bersama pengujian perangkat. Periksa [audit dan batas rilis](docs/audit/F14-AUDIT.md) sebelum penerapan.
+
+## Demonstrasi dan portofolio
+
+[Menjalankan ekosistem](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PANDUAN-JALANKAN-DEMO.md) | [Presentasi](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PANDUAN-PRESENTASI.md) | [Naskah](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/NASKAH-DEMO.md) | [Review Git/PR](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PORTFOLIO-RELEASE-REVIEW.md).
+
+### Screenshot perangkat
+
+Belum ada screenshot native terverifikasi dalam repository. [Panduan capture](docs/screenshots/README.md) menentukan layar yang diperlukan. Tidak memakai screenshot Web atau gambar fiktif sebagai pengganti Android.

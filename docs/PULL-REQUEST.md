@@ -1,22 +1,11 @@
-> Dokumen historis dipindahkan dari `barberbarbar-customer/PULL-REQUEST.md`. Hasil dan path bukti mencatat waktu audit; panduan aktif ada di README utama dan laporan cleanup. Arsip privat kini berada di luar Stage 2.
+# Sediakan aplikasi customer untuk booking dan pemantauan layanan
 
-# Tambahkan aplikasi customer yang terhubung dengan backend operasional
+Draft teks review; origin/main belum ada dan default remote masih feature/project5-integration saat audit. Jangan membuka PR dengan base palsu. [Rencana main yang menjaga seluruh history](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PORTFOLIO-RELEASE-REVIEW.md) memerlukan persetujuan pemilik sebelum pembuatan branch/default remote. Belum dieksekusi.
 
-Aplikasi Expo menyediakan empat tab Beranda/Booking/Riwayat/Akun, katalog
-publik, auth/pengaitan/profil, membership, booking multiservice, searchable
-barber, status/tagihan/checkout/refund/invoice dan sinkronisasi REST/Socket.
-Harga dan status pembayaran tetap ditentukan backend; SecureStore menangani
-credential sesi. Identitas visual BARBER BARBAR dipertahankan.
+Aplikasi Expo menyediakan Beranda/Booking/Riwayat/Akun, katalog publik, auth/pengaitan/profil, membership, booking multiservice/jumlah, searchable barber, reschedule items/qty, checkout/refund request/invoice, REST refetch dan Socket.IO. Harga/status pembayaran authoritative backend, sesi melalui SecureStore. Perubahan identitas/password memerlukan password saat ini dan login ulang. Reset link membuka formulir tanpa mengubah password otomatis; email nyata nonaktif dan scheme memerlukan native/development build.
 
-Perbaikan finalisasi mencegah refetch detail menimpa barber draf jadwal ulang.
-Regresi source aktual menguji pilihan spesifik/null dan perpindahan route.
-Validasi lengkap dan batas adapter/provider ada di audit utama Project3:
-TypeScript, Expo check, Android export, SDK/API, dropdown, detail dan draf.
-Device UI/checkout Sandbox dari app belum terbukti. Recovery email belum
-delivery; perubahan identitas/password dan item reschedule perlu keputusan
-PRD. Advisory high/moderate tetap dicatat, bukan dinyatakan selesai.
+File signifikan untuk review awal: App.tsx/app.json, src/layar, src/komponen/PilihanBerpencarian.tsx, src/layanan/api.ts, sesi.ts, realtime.ts, pemulihan.ts dan aturan; scripts/test-customer.mjs, test-pilihan-barber.mjs, test-detail-customer.mjs, test-draf-jadwal-ulang.mjs, test-pemulihan-customer.mjs. Tugas demo terbaru hanya dokumentasi README/PR/panduan capture, tanpa kode/dependency baru.
 
-Backend kompatibel dan acceptance staging harus tersedia sebelum distribusi
-app. Env/credential tidak ikut repository. **Belum ada origin/main** pada repo
-ini: pemilik perlu menetapkan base branch/history sebelum PR dapat dibuka.
-Dokumen ini draft teks review, tidak membuat main/merge/deploy secara otomatis.
+TypeScript, Expo check, Android Hermes, adapter dropdown/detail/draft/recovery dan SDK integrasi PASS sebagai bagian 29/29 regresi lintas repository. Native berhasil menurut pengguna (USER-REPORTED), rincian skenario dan checkout UI Android DEFERRED. Hasil SDK/mock tidak menggantikan perangkat/provider. Screenshot native belum tersedia, panduan capture disiapkan.
+
+DEMO READY WITH LIMITATIONS untuk pembelajaran/demo lokal. Advisory, email nyata, refund historis dan Master PRD lengkap tetap memiliki keterbatasan. Tidak membuat transaksi baru, mengaktifkan Production, mengubah default/main atau merge tanpa persetujuan.
