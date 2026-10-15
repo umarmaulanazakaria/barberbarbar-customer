@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "typecheck": "tsc --noEmit",
     "build:android": "expo export --platform android --output-dir dist",
-    "test": "node scripts/test-pilihan-barber.mjs && node scripts/test-detail-customer.mjs && node scripts/test-customer.mjs"
+    "test": "node scripts/test-pilihan-barber.mjs && node scripts/test-detail-customer.mjs && node scripts/test-draf-jadwal-ulang.mjs && node scripts/test-customer.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
