@@ -90,39 +90,7 @@ export function checkoutAman(alamat: string) {
     u.password ||
     !u.pathname.startsWith("/snap/")
   )
-    throw new Error("Tautan pembayaran Sandbox tidak valid.");
+    throw new Error("Tautan pembayaran tidak dapat dibuka. Silakan periksa status pembayaran.");
   return alamat;
 }
-const label: Record<string, string> = {
-  PENDING_CONFIRMATION: "Menunggu konfirmasi",
-  CONFIRMED: "Booking dikonfirmasi",
-  CHECKED_IN: "Sudah check-in",
-  IN_SERVICE: "Sedang dilayani",
-  COMPLETED: "Layanan selesai",
-  REJECTED: "Ditolak",
-  CANCELLED: "Dibatalkan",
-  NO_SHOW: "Tidak hadir",
-  PENDING: "Menunggu",
-  APPROVED: "Disetujui",
-  SUCCEEDED: "Berhasil",
-  FAILED: "Gagal",
-  EXPIRED: "Kedaluwarsa",
-  PROCESSING: "Sedang diproses",
-  PENDING_APPROVAL: "Menunggu persetujuan",
-  ACTIVE: "Member aktif",
-  INACTIVE: "Member nonaktif",
-  NON_MEMBER: "Belum menjadi member",
-  AWAITING_DP: "Menunggu DP",
-  DP_PAID: "DP sudah dibayar",
-  UNPAID: "Belum dibayar",
-  PARTIALLY_PAID: "Dibayar sebagian",
-  OVERDUE: "Lewat batas pembayaran",
-  PAID: "Lunas",
-  REFUND_REVIEW: "Pengembalian dana ditinjau",
-  DP_FORFEITED: "DP hangus",
-  DP: "Uang muka",
-  PELUNASAN: "Pelunasan",
-  REFUND: "Pengembalian dana",
-};
-export const statusRamah = (status: string) =>
-  label[status] ?? "Status sedang diperbarui";
+export { statusRamah } from './teks';

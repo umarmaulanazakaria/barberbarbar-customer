@@ -72,6 +72,7 @@ export type Transaksi = {
   dibayarPada: string | null;
 };
 export type Ringkasan = {
+  pembayaranPercobaan?: boolean;
   total: number;
   subtotal: number;
   discountPercent: number;

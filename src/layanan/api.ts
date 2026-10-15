@@ -1,4 +1,5 @@
 import axios from "axios";
+import { pesanAman } from './teks';
 import type {
   Akun,
   Barber,
@@ -21,7 +22,7 @@ export function validasiAlamat(alamat: string) {
     u.search ||
     u.hash
   )
-    throw new Error("Konfigurasi alamat API tidak valid.");
+    throw new Error("Aplikasi belum dapat terhubung. Silakan hubungi pengelola.");
   return u.origin;
 }
 export const publik = axios.create({
@@ -58,12 +59,12 @@ export const pesanError = (e: unknown) => {
     if (e.response?.status === 401)
       return "Sesi berakhir atau data masuk tidak sesuai. Silakan masuk kembali.";
     if (!e.response)
-      return "Belum terhubung ke server. Periksa koneksi dan coba lagi.";
+      return "Koneksi terputus. Periksa jaringan dan coba lagi.";
     if (e.response.status >= 500)
       return "Layanan sedang mengalami gangguan. Silakan coba lagi.";
-    return e.response.data?.pesan ?? "Permintaan belum dapat diproses.";
+    return pesanAman(e.response.data?.pesan, 'Permintaan belum dapat diproses.');
   }
-  return e instanceof Error ? e.message : "Terjadi kendala. Silakan coba lagi.";
+  return pesanAman(e instanceof Error ? e.message : null);
 };
 export const ambilLayanan = async () =>
   (await publik.get<Layanan[]>("/public/services")).data;
