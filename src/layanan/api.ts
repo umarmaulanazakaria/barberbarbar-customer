@@ -78,8 +78,8 @@ export const verifikasiToken = async (token: string) =>
   ).data.akun;
 export const ambilProfil = async () =>
   (await privat<{ akun: Akun }>("get", "/auth/customer/me")).akun;
-export const ubahProfil = (data: { nama: string; alamat: string }) =>
-  privat("patch", "/auth/customer/me", data);
+export const ubahProfil = (data: { nama?: string; alamat?: string; email?: string; nomorTelepon?: string; passwordSaatIni?: string; passwordBaru?: string }) =>
+  privat<{ sesiDicabut: boolean }>("patch", "/auth/customer/me", data);
 export const ambilMembership = () =>
   privat<Membership>("get", "/customer/membership");
 export const ajukanMembership = () =>
@@ -120,6 +120,7 @@ export const jadwalUlang = async (id: number, d: DrafBooking) =>
       {
         mulaiPada: payloadBooking(d).mulaiPada,
         barberPilihanId: d.barberPilihanId,
+        items: d.items,
       },
     )
   ).booking;

@@ -13,18 +13,18 @@ const modules = {
   '../komponen/ui': `export const Baris='Baris',Halaman='Halaman',Kartu='Kartu',Kesalahan='Kesalahan',Kolom='Kolom',Lencana='Lencana',Memuat='Memuat',Tombol='Tombol';`,
   '../komponen/PilihanBerpencarian': `export const PilihanBerpencarian='PilihanBerpencarian';`,
   '../tema': `export const gaya={};`,
-  '../layanan/api': `export const ambilBarber=()=>{},ambilLayanan=()=>{},ambilMembership=()=>{},buatBooking=()=>{},jadwalUlang=()=>{};`,
-  '../layanan/cache': `export const cache={};`,
-  '../layanan/kueri': `let data;export const ganti=x=>data=x;export const useDetail=()=>({data}),useBarber=()=>({data:[]}),useLayanan=()=>({}),useMembership=()=>({});`,
+  '../layanan/api': `const dikirim=[];export const ambilKirim=()=>dikirim;export const ambilBarber=()=>{},ambilLayanan=()=>{},ambilMembership=()=>{},buatBooking=()=>{},jadwalUlang=async(id,draf)=>{dikirim.push(structuredClone(draf));};`,
+  '../layanan/cache': `export const cache={invalidateQueries:async()=>{}};`,
+  '../layanan/kueri': `let data;export const ganti=x=>data=x;export const useDetail=()=>({data}),useBarber=()=>({data:[11,22,33].map(id=>({id,nama:'Barber dummy'}))}),useLayanan=()=>({data:[{id:10,nama:'Cukur dummy',harga:10001,durasiMenit:30},{id:20,nama:'Rapikan dummy',harga:5000,durasiMenit:15}]}),useMembership=()=>({});`,
   '../layanan/sesi': `export const ambilSesi=()=>({}),langgananSesi=()=>()=>{},useSesi=()=>({});`,
 };
 const output = path.resolve('node_modules/.cache/test-draf-jadwal-ulang.mjs');
 try {
-  const r = await build({ stdin: { contents: `export {LayarJadwalUlang} from './src/layar/Booking';export {mulai,efek} from 'react';export {ganti} from '../layanan/kueri';`, resolveDir: process.cwd(), sourcefile: 'draf-fixture.ts' }, bundle: true, write: false, platform: 'node', format: 'esm', packages: 'external', jsx: 'automatic', plugins: [{ name: 'native-adapter', setup(b) { b.onResolve({ filter: /.*/ }, a => Object.hasOwn(modules, a.path) ? { path: a.path, namespace: 'fixture' } : undefined); b.onLoad({ filter: /.*/, namespace: 'fixture' }, a => ({ contents: modules[a.path], loader: 'js' })); } }] });
+  const r = await build({ stdin: { contents: `export {LayarJadwalUlang} from './src/layar/Booking';export {mulai,efek} from 'react';export {ganti} from '../layanan/kueri';export {ambilKirim} from '../layanan/api';`, resolveDir: process.cwd(), sourcefile: 'draf-fixture.ts' }, bundle: true, write: false, platform: 'node', format: 'esm', packages: 'external', jsx: 'automatic', plugins: [{ name: 'native-adapter', setup(b) { b.onResolve({ filter: /.*/ }, a => Object.hasOwn(modules, a.path) ? { path: a.path, namespace: 'fixture' } : undefined); b.onLoad({ filter: /.*/, namespace: 'fixture' }, a => ({ contents: modules[a.path], loader: 'js' })); } }] });
   await mkdir(path.dirname(output), { recursive: true }); await writeFile(output, r.outputFiles[0].text);
   const mod = await import(pathToFileURL(output));
   const semua = n => Array.isArray(n) ? n.flatMap(semua) : n && typeof n === 'object' ? [n, ...semua(n.props?.children)] : [];
-  const tampil = id => { let root; for (let n = 0; n < 5; n++) { mod.mulai(); root = mod.LayarJadwalUlang({ route: { params: { id } }, navigation: {} }); if (!mod.efek()) return semua(root); } throw new Error('Render adapter tidak stabil'); };
+  const tampil = id => { let root; for (let n = 0; n < 5; n++) { mod.mulai(); root = mod.LayarJadwalUlang({ route: { params: { id } }, navigation: {goBack(){}} }); if (!mod.efek()) return semua(root); } throw new Error('Render adapter tidak stabil'); };
   const pilihan = root => root.find(n => n.type === 'PilihanBerpencarian');
   const fixture = { id: 1, items: [{ layananId: 10, qty: 1 }], barberPilihanId: 11 };
   mod.ganti(undefined); let root = tampil(1);
@@ -38,6 +38,17 @@ try {
   assert.equal(pilihan(root).props.nilai, 22, 'Refetch detail tidak boleh menimpa barber pilihan pengguna');
   pilihan(root).props.ubah(null); mod.ganti({ ...fixture }); root = tampil(1);
   assert.equal(pilihan(root).props.nilai, null, 'Barber siapa saja tetap null sesudah refetch');
+  root.find(n=>n.props?.judul==='+ Cukur dummy').props.tekan(); root=tampil(1);
+  root.find(n=>n.props?.judul==='+ Rapikan dummy').props.tekan(); root=tampil(1);
+  mod.ganti({...fixture});root=tampil(1);
+  assert.deepEqual(jadwal(root).props.draf.items,[{layananId:10,qty:2},{layananId:20,qty:1}],'Refetch tidak menghapus edit layanan/qty');
+  const hari=new Date(Date.now()+7*3600000+2*86400000).toISOString().slice(0,10);
+  jadwal(root).props.ubah({...jadwal(root).props.draf,tanggal:hari,jam:'10:00'});root=tampil(1);
+  root.find(n=>n.props?.judul==='Ajukan jadwal baru').props.tekan();
+  for(let i=0;i<20&&!mod.ambilKirim().length;i++)await new Promise(r=>setTimeout(r,10));
+  assert.deepEqual(mod.ambilKirim()[0].items,[{layananId:10,qty:2},{layananId:20,qty:1}]);
+  assert.equal(mod.ambilKirim()[0].barberPilihanId,null);
+  console.log('PASS DRAF-ITEM: editor layanan/qty bertahan saat refetch dan terkirim bersama jadwal/barber null (adapter).');
   mod.ganti({ ...fixture, id: 2, barberPilihanId: 33 }); root = tampil(2);
   assert.equal(pilihan(root).props.nilai, 33, 'Route booking berbeda harus menginisialisasi ulang');
   assert.equal(jadwal(root).props.draf.tanggal, tanggalAwal, 'Route baru tidak membawa tanggal draf sebelumnya');

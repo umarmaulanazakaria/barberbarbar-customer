@@ -27,7 +27,7 @@ export function estimasi(
       durasi += l.durasiMenit * item.qty;
     }
   }
-  const diskon = member ? Math.round(subtotal * 0.1) : 0,
+  const diskon = member ? Math.floor(subtotal * 0.1) : 0,
     total = subtotal - diskon;
   return { subtotal, diskon, total, dp: Math.ceil(total * 0.5), durasi };
 }

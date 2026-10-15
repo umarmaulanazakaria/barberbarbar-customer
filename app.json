@@ -1,6 +1,7 @@
 {
  "expo": {
   "name":"BARBER BARBAR Customer","slug":"barberbarbar-customer","version":"1.0.0",
+  "scheme":"barberbarbar-customer",
   "orientation":"portrait","userInterfaceStyle":"light","icon":"./assets/icon.png",
   "android":{"package":"com.barberbarbar.customer","predictiveBackGestureEnabled":false},
   "plugins":["expo-secure-store"],

@@ -3,7 +3,7 @@ export type Tumpukan = {
   Utama: undefined;
   Masuk: undefined;
   Daftar: undefined;
-  LupaPassword: undefined;
+  LupaPassword: { token?: string | undefined } | undefined;
   DetailBooking: { id: number };
   JadwalUlang: { id: number };
 };

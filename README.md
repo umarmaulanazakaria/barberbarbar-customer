@@ -8,7 +8,7 @@ Aplikasi customer untuk melihat layanan, mengajukan membership, membuat booking,
 
 React Native 0.86, Expo SDK 57, React 19, TypeScript, React Navigation, React Query, Axios, SecureStore, Socket.IO, DateTimePicker, dan WebBrowser.
 
-- Registrasi/login CUSTOMER, profil, dan fondasi lupa/reset password.
+- Registrasi/login CUSTOMER, profil, perubahan identitas/kata sandi dengan verifikasi kata sandi saat ini, serta formulir lupa/reset password.
 - Katalog layanan/barber aktif tanpa login; membership melalui persetujuan ADMIN.
 - Booking multiservice dengan jumlah, searchable dropdown barber, reschedule, pembatalan, dan persetujuan usulan barber.
 - Status DP/pelunasan, checkout Midtrans, refund, riwayat, serta invoice sendiri.
@@ -48,7 +48,11 @@ Customer dapat booking tanpa membership. Pengajuan customer memakai benefit 10% 
 
 Checkout dibuka melalui WebBrowser. Kembalinya browser tidak menetapkan PAID; aplikasi mengambil status dari backend setelah webhook terverifikasi. Pengujian provider memakai Sandbox; Production belum diaktifkan. Refund memerlukan ADMIN, dan PROCESSING belum berarti dana dikembalikan.
 
-Forgot-password belum mengirim email recovery. Checkout langsung dari aplikasi dan acceptance perangkat belum dibuktikan; adapter/mock hanya membuktikan kontrak lokal.
+Jadwal ulang dapat mengubah layanan, jumlah, barber dan waktu; backend menentukan ulang durasi, harga dan kecukupan DP menggunakan diskon booking. Perubahan perlu konfirmasi ulang.
+
+Pengiriman email nyata masih nonaktif sampai provider disetujui/dikonfigurasi. Backend sudah memiliki template dan kontrak transport yang diuji mock; jangan menganggap email telah terkirim. Tautan pemulihan memakai `barberbarbar-customer://reset-password` dengan token pada fragment, membuka formulir tanpa menjalankan reset otomatis. Scheme baru memerlukan development/native build yang diregistrasikan; jangan menganggap Expo Go otomatis mendukungnya. Lihat [panduan Expo](https://docs.expo.dev/linking/into-your-app/).
+
+Perubahan email/telepon/kata sandi mencabut sesi lama dan meminta login kembali. Password/kode tidak disimpan ke storage atau log. Laporan umum pengguna bahwa mobile berhasil dicatat; acceptance per skenario dan checkout langsung Android tetap memerlukan bukti spesifik. Detail hasil terkini ada di [penutupan acceptance](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/FINAL-ACCEPTANCE-CLOSURE.md).
 
 ## Pengujian
 
@@ -57,6 +61,7 @@ npm.cmd run typecheck
 npx.cmd expo install --check
 npm.cmd run build:android
 npm.cmd test
+node scripts/test-pemulihan-customer.mjs
 ```
 
 Suite menguji searchable dropdown, detail, draft reschedule, sesi, booking, pembayaran, membership, dan realtime melalui adapter lokal. Runner di backend menambah regresi HTTP/database dan browser Web. Ekspor Hermes berbeda dari acceptance UI Android. Output `dist`, `.expo`, cache, dan environment tidak dilacak Git.
