@@ -1,4 +1,4 @@
-# BARBER BARBAR — Customer Mobile App
+# BARBER BARBAR — Customer App
 
 Aplikasi customer untuk melihat layanan, mengajukan membership, membuat booking, dan mengikuti status layanan serta pembayaran. Aplikasi memakai backend pusat yang juga digunakan Web Management dan Mobile Staff.
 
