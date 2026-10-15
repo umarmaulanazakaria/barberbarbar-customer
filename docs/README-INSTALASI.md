@@ -1,3 +1,5 @@
+> Dokumen historis dipindahkan dari `barberbarbar-customer/README-INSTALASI.md`. Hasil dan path bukti mencatat waktu audit; panduan aktif ada di README utama dan laporan cleanup. Arsip privat kini berada di luar Stage 2.
+
 # BARBER BARBAR Customer
 
 Aplikasi Project 5 React Native + Expo + TypeScript, Android-first. Backend

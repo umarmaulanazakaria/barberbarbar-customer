@@ -1,3 +1,5 @@
+> Dokumen historis dipindahkan dari `barberbarbar-customer/PULL-REQUEST.md`. Hasil dan path bukti mencatat waktu audit; panduan aktif ada di README utama dan laporan cleanup. Arsip privat kini berada di luar Stage 2.
+
 # Tambahkan aplikasi customer yang terhubung dengan backend operasional
 
 Aplikasi Expo menyediakan empat tab Beranda/Booking/Riwayat/Akun, katalog

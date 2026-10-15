@@ -1,8 +1,10 @@
+> Dokumen historis dipindahkan dari `barberbarbar-customer/F13-AUDIT.md`. Hasil dan path bukti mencatat waktu audit; panduan aktif ada di README utama dan laporan cleanup. Arsip privat kini berada di luar Stage 2.
+
 # Verifikasi ulang aplikasi Customer
 
-15 Oktober 2026. [Audit utama](../barberbarbar/F13-AUDIT.md),
-[matriks](../barberbarbar/server/e2e/MATRIKS-E2E.md),
-[panduan perangkat/provider](../barberbarbar/README-PENGUJIAN.md).
+15 Oktober 2026. [Audit utama](../../../barberbarbar/docs/audit/F13-AUDIT.md),
+[matriks](../../../barberbarbar/server/e2e/MATRIKS-E2E.md),
+[panduan perangkat/provider](../../../barberbarbar/docs/README-PENGUJIAN.md).
 
 Perbaikan minimal: izin reschedule mengikuti batas satu jam yang divalidasi
 backend; tipe DTO dan detail booking menampilkan alasan penolakan. Regresi
