@@ -4,9 +4,13 @@
 
 ## Hasil
 
+Pembaruan finalisasi16 Oktober: kontrol demo dihapus dari entry publik; App lama hanya di tests/fixtures dan mode test. Riwayat pembayaran ditampilkan dari ledger. Booking3745 berhasil end-to-end dengan provider resmi: total Rp20.000, DP dan pelunasan masing-masing Rp10.000 settlement, otomatis CONFIRMED, operasional COMPLETED, PAID, balance0 dan satu invoice. Replay webhook/sync mempertahankan tepat dua kredit dan satu AUTO_CONFIRM_GUEST. Booking3742/3744 yang sebelumnya ditunda sudah CANCELLED tanpa kredit/invoice.
+
+Pengujian: backend build/Prisma valid,12 guest/Native,15 booking/kasir,17 payment/refund dan27 scheduler PASS. Web build37 modules,14 tes lama pada mode test dan2 tes aplikasi publik/API fixture PASS. Provider suite regresi tersebut adalah MOCK; bukti provider nyata terpisah pada booking3745, memakai Snap dan simulator BCA resmi Midtrans tanpa intersepsi gateway. Invoice aktual lulus reload/browser baru/lima viewport. Backend menormalkan DTO daftar/detail Staff/Native ke UTC setelah ketidaksesuaian waktu terbukti. Rincian checkpoint dan bukti: laporan backend `WEB-FINALIZATION.md`.
+
 | Pemeriksaan | Hasil |
 | --- | --- |
-| TypeScript dan Vite build | PASS, 39 modules |
+| TypeScript dan Vite build | PASS, 37 modules |
 | 14 tes browser UI awal | PASS, dipertahankan pada mode demo terisolasi |
 | Web ke API aktual + PostgreSQL fixture sampai invoice | PASS; provider/Snap MOCK |
 | Nomor booking/token server, tanpa akun/barber, multi layanan | PASS |
@@ -16,7 +20,7 @@
 | Replay settlement, dua kredit DP+pelunasan dan satu invoice | PASS |
 | Token tidak berada pada URL request backend | PASS |
 | Lima lebar viewport UI lama dan invoice nyata fixture | PASS: 320,375,430,768,1440 |
-| Midtrans provider Sandbox nyata | Snap DP Rp5.000 siap; pembayaran/settlement DEFERRED atas permintaan user |
+| Midtrans provider Sandbox nyata | PASS booking3745: DP dan pelunasan settlement, dua kredit, satu invoice |
 | Android Native/Staff device | DEFERRED, bukan klaim dari API/browser |
 | Migration/aktivasi database existing | PASS, disetujui dan diterapkan; backend kompatibel aktif pada3000 |
 

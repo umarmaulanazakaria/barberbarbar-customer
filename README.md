@@ -4,9 +4,9 @@ React Web mobile-first yang hidup berdampingan dengan React Native Customer. Tid
 
 ## Status aktual
 
-Alur Web -> backend aktual -> PostgreSQL fixture -> DP -> auto confirmation -> proses Staff -> pelunasan -> invoice telah diuji, dengan provider Midtrans MOCK. Ini bukan bukti transaksi Sandbox/provider nyata.
+Alur Web -> backend aktual -> DP Midtrans Sandbox -> konfirmasi otomatis -> operasional -> pelunasan Sandbox -> invoice final telah lulus dengan provider resmi pada booking3745. DP dan pelunasan masing-masing Rp10.000 berstatus settlement; balance Rp0, tepat dua kredit dan satu invoice. Replay webhook tidak menggandakan pembayaran.
 
-**Database existing sudah dimigrasikan setelah persetujuan user dan backend kompatibel aktif di port3000.** Backup serta snapshot22 existing terverifikasi identik sebelum/sesudah DDL. Satu Snap Sandbox DP dummy Rp5.000 berhasil disiapkan, tetapi user menunda pembayaran; settlement dan konfirmasi otomatis provider nyata masih DEFERRED. Helper checkout lokal telah ditutup. Rincian ada pada laporan backend `GUEST-MIGRATION-PLAN.md` dan `GUEST-BOOKING-AUDIT.md`.
+**Backend kompatibel aktif di port3000 dengan database existing yang sama.**20 migration tetap selesai, tanpa migration ulang. Data existing tetap terlindungi. Booking uji lama yang ditunda sudah CANCELLED tanpa kredit/invoice. Rincian bukti provider, checkpoint dan regresi ada pada laporan backend `server/WEB-FINALIZATION.md`. Perangkat Android belum tersedia; pengujian UI Mobile Staff/Native tetap DEFERRED.
 
 ## Menjalankan
 
@@ -25,7 +25,9 @@ VITE_GUEST_BOOKING_ENABLED=true
 
 `VITE_*` masuk browser: jangan isi Server Key, credential atau JWT. Jangan menyalin `.env` Native/backend. Backend memakai credential Sandbox existing melalui konfigurasi proses; Client Key publik untuk Snap dikirim backend, bukan di-hardcode.
 
-Mode UI demo terisolasi tetap tersedia melalui layanan demo atau `VITE_GUEST_BOOKING_ENABLED=false`, dengan label Demo UI. Seluruh 14 tes awal tetap dipertahankan. Demo tidak membuat booking/transaksi, sementara alur publik nyata hanya menampilkan nomor/status dari backend.
+Aplikasi publik hanya memakai API nyata: tidak menyediakan katalog demo, hasil pratinjau, simulasi pembayaran, atau invoice contoh. Seluruh14 tes awal tetap dipertahankan melalui `tests/fixtures/AppPratinjau.tsx`, yang hanya dimuat pada Vite mode `test`. Build publik tidak menyertakan kontrol atau hasil demo. Menonaktifkan API tidak menghasilkan sukses palsu.
+
+Pengujian booking3745 memakai Hair Wash existing Rp20.000, identitas uji, checkout Web resmi dan simulator BCA milik Midtrans Sandbox. Aplikasi publik tidak memiliki tombol simulasi atau sukses palsu. Invoice nyata lulus reload, browser context baru dan lima viewport. Login/daftar operasional/check-in/barber/start/complete diuji melalui API operator existing; tidak diklaim sebagai pengujian perangkat Mobile.
 
 ## Alur nyata
 

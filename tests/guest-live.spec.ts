@@ -1,6 +1,24 @@
 import {test,expect,type Page} from '@playwright/test';
 const jadwal=()=>new Date(Date.now()+7*3600000+7*86400000).toISOString().slice(0,10);
 const akses=async(page:Page)=>'Guest '+new URL(await page.getByLabel('Tautan pribadi',{exact:true}).inputValue()).hash.split('/')[2];
+
+test('Aplikasi publik memakai API tanpa kontrol demo atau hasil booking palsu',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByRole('heading',{name:'Guest Browser Haircut'})).toBeVisible();
+  await expect(page.getByRole('button',{name:/demo/i})).toHaveCount(0);
+  await expect(page.locator('body')).not.toContainText(/PREVIEW|Coming Soon|Under Development|backend existing/);
+  for(const width of [320,375,430,768,1440]){
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  }
+  await page.goto('/#/demo/selesai');
+  await expect(page.getByRole('heading',{name:'Halaman tidak ditemukan.'})).toBeVisible();
+  await expect(page.getByTestId('nomor-booking')).toHaveCount(0);
+  await page.route('**/api/public/services',r=>r.fulfill({status:503,body:'{}'}));
+  await page.goto('/');await page.reload();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('button',{name:/demo/i})).toHaveCount(0);
+});
 test('Web -> backend aktual -> DP mock -> Staff -> pelunasan -> invoice, tanpa mengubah Native',async({page,context,request})=>{
   const kesalahan:string[]=[],privatUrl:string[]=[],payloads:Record<string,unknown>[]=[];
   page.on('pageerror',e=>kesalahan.push(e.message));
