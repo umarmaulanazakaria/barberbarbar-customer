@@ -6,9 +6,10 @@ export type SumberKatalog = {
   layanan: Layanan[];
   memuat: boolean;
   error: string;
-  demo: boolean;
-  gunakanDemo: () => void;
-  gunakanPublik: () => void;
+  // Hanya fixture pengujian yang menyediakan kontrol katalog contoh.
+  demo?: boolean;
+  gunakanDemo?: () => void;
+  gunakanPublik?: () => void;
   perbarui: () => void;
 };
 export function StatusKatalog({ sumber: s }: { sumber: SumberKatalog }) {

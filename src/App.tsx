@@ -78,9 +78,6 @@ export default function App() {
     layanan,
     memuat,
     error,
-    demo: false,
-    gunakanDemo: () => {},
-    gunakanPublik: () => {},
     perbarui: () => aturUlangi((n) => n + 1),
   };
   const lanjut = async (d: DrafBooking) => {
