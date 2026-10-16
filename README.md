@@ -38,7 +38,7 @@ Pengujian booking3745 memakai Hair Wash existing Rp20.000, identitas uji, checko
 3. Booking baru menggunakan sesi HttpOnly pada browser. Setelah DP sah, simpan kode tracking rahasia. Kode dikirim hanya melalui body POST tracking, bukan URL. Link pribadi lama tetap didukung sebagai kompatibilitas historis.
 4. Countdown menggunakan deadline dan offset waktu server, bukan membuat deadline baru ketika membuka checkout.
 5. Snap Sandbox dimuat hanya setelah klik pembayaran, dengan token pembayaran dari backend. Pending/success/error/close callback hanya memicu pembacaan ulang; bukan bukti lunas.
-6. Backend memverifikasi status provider, mengonfirmasi guest tepat waktu, dan mengirim perubahan kepada Staff. Web melakukan polling REST, foreground dan online recovery.
+6. Backend memverifikasi status provider, mengonfirmasi guest tepat waktu, dan mengirim perubahan kepada Staff. Web menerima Socket.IO melalui sesi HttpOnly; event booking/order/payment dan reconnect memicu refetch REST. Polling 10 detik, foreground dan online recovery tetap aktif sebagai fallback.
 7. Staff memakai endpoint existing untuk check-in, menentukan barber, layanan dan selesai. UI Web membaca item aktual jika layanan diubah.
 8. Pelunasan memakai balance backend; invoice hanya tersedia saat COMPLETED+PAID melalui endpoint privat final.
 
@@ -77,3 +77,11 @@ node node_modules/@playwright/test/cli.js test --config playwright.customer-prin
 ```
 
 Suite ini membuka UI aplikasi aktual (bukan entry pratinjau), mengintersepsi seluruh API, memeriksa delapan viewport 320?1440 px, status pembayaran, tracking dan invoice. Tidak membuat transaksi provider atau record database. Suite guest/tracking menggunakan backend dan PostgreSQL fixture untuk membuktikan integrasi kontrak. Lint belum dikonfigurasi.
+
+## Realtime sesi guest
+
+`socket.io-client` terpasang sesuai persetujuan. Proxy `/socket.io` dengan WebSocket menuju backend yang sama dengan `/api`; `BARBER_API_PROXY_TARGET` berlaku untuk keduanya. Browser memakai WebSocket agar Origin dapat diverifikasi ketat. Tidak mengirim kode tracking, ID booking, token sesi atau credential melalui auth/query JavaScript; cookie HttpOnly dikirim browser. Backend menentukan room dari sesi dan memeriksa ulang expiry/versi akses. Socket hanya aktif pada halaman booking yang telah memperoleh data melalui REST, dibersihkan ketika keluar, dan tidak diperlukan untuk katalog publik.
+
+Event hanya meminta pembacaan ulang, bukan bukti settlement. Bila WebSocket diblokir, REST polling tetap berjalan. Saat sesi dicabut, server memutus socket dan REST membersihkan detail/kode/invoice. Server dan proxy deployment harus mendukung upgrade WebSocket pada `/socket.io`; Vite proxy hanya untuk development.
+
+Tes lintas Customer/Admin: `node node_modules/@playwright/test/cli.js test --config playwright.realtime.config.ts`, dengan backend fixture `serve-guest-browser.mjs` di3185, Vite Customer5186 dan Vite Admin5188 (BB_E2E_BACKEND_PORT=3185). Jangan mengarahkan fixture ke database utama. Lihat [audit Socket.IO dan Midtrans](../barberbarbar/docs/INTEGRASI-SOCKET-MIDTRANS.md).

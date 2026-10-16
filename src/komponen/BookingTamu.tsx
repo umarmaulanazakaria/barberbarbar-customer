@@ -10,6 +10,7 @@ import {
   type DetailTamu,
 } from "../layanan/guest";
 import { muatSnap } from "../layanan/snap";
+import { langgananBookingTamu } from "../layanan/realtime";
 import { Ikon } from "./Ikon";
 import "../tracking.css";
 
@@ -50,6 +51,7 @@ export default function BookingTamu({
     [sibuk, aturSibuk] = useState(false);
   const [invoiceDisahkan, aturInvoiceDisahkan] = useState(false);
   const urutan = useRef(0),
+    versiAkses = useRef(0),
     kunci = useRef(false),
     offset = useRef(0),
     terakhirSync = useRef(0),
@@ -71,7 +73,8 @@ export default function BookingTamu({
         aturError("");
         return hasil;
       } catch (e) {
-        if(e instanceof KesalahanGuest && e.status===404){aturData(null);aturKode(null);}
+        if (nomor !== urutan.current || !terpasang.current) return undefined;
+        if(e instanceof KesalahanGuest && e.status===404){versiAkses.current++;aturData(null);aturKode(null);aturInvoiceDisahkan(false);}
         if (nomor === urutan.current && terpasang.current)
           aturError(
             e instanceof Error ? e.message : "Status belum dapat dimuat.",
@@ -81,6 +84,10 @@ export default function BookingTamu({
     },
     [simpan],
   );
+  const nomorBooking = data?.booking.nomorBooking;
+  useEffect(() => {
+    if (nomorBooking) return langgananBookingTamu(() => { void muat(); });
+  }, [nomorBooking, muat]);
   useEffect(() => {
     terpasang.current = true;
     void muat();
@@ -117,10 +124,11 @@ export default function BookingTamu({
   useEffect(() => {
     if (halaman !== "invoice") return;
     let aktif = true;
+    const versi = versiAkses.current;
     aturInvoiceDisahkan(false);
     void invoiceGuest()
       .then((hasil) => {
-        if (aktif) {
+        if (aktif && versi === versiAkses.current) {
           simpan(hasil);
           aturInvoiceDisahkan(true);
           aturError("");
@@ -137,7 +145,7 @@ export default function BookingTamu({
     return () => {
       aktif = false;
     };
-  }, [halaman, simpan]);
+  }, [halaman, simpan, data?.ringkasan.invoice?.nomorInvoice]);
   const bukaSnap = async () => {
     if (kunci.current || !data) return;
     kunci.current = true;
@@ -186,7 +194,7 @@ export default function BookingTamu({
       if (terpasang.current) aturSibuk(false);
     }
   };
-  useEffect(()=>{if(!data?.ringkasan.dpTerverifikasi||kode)return;let aktif=true;void kodeTrackingGuest().then(r=>{if(aktif)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,kode]);
+  useEffect(()=>{if(!data?.ringkasan.dpTerverifikasi||kode)return;let aktif=true;const versi=versiAkses.current;void kodeTrackingGuest().then(r=>{if(aktif && versi===versiAkses.current)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,kode]);
   const salin=async()=>{if(!kode)return;try{await navigator.clipboard.writeText(kode);aturPesan("Kode tracking disalin. Simpan dan jangan bagikan kepada orang lain.")}catch{aturPesan("Pilih kode di atas untuk menyalinnya secara manual.")}};
   if (!data)
     return (

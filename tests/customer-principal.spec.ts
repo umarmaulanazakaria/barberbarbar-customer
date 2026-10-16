@@ -33,6 +33,9 @@ test("Customer utama: delapan viewport, otoritas pembayaran, tracking dan invoic
   page.on("console", m => { if (m.type() === "error") gangguan.push(m.text()); });
   let data = detail();
   const takDikenal: string[] = [];
+  // Transport dimatikan pada suite kontrak HTTP ini; fallback REST tetap aktif.
+  await page.route("**/socket.io/**", r => r.fulfill({ body: "fixture-socket-offline" }));
+  await page.routeWebSocket("**/socket.io/**", ws => ws.close());
   await page.route("**/api/**", async r => {
     const p = new URL(r.request().url()).pathname;
     if (p === "/api/public/services") return r.fulfill({ json: katalog });

@@ -6,7 +6,7 @@ export default defineConfig(({mode})=>({
     host: '127.0.0.1',
     port: 5175,
     strictPort: true,
-    proxy: { '/api': { target: loadEnv(mode,'.','BARBER_').BARBER_API_PROXY_TARGET || 'http://127.0.0.1:3000', rewrite: path => path.replace(/^\/api/, '') } },
+    proxy: { '/socket.io': { target: loadEnv(mode,'.','BARBER_').BARBER_API_PROXY_TARGET || 'http://127.0.0.1:3000', ws: true }, '/api': { target: loadEnv(mode,'.','BARBER_').BARBER_API_PROXY_TARGET || 'http://127.0.0.1:3000', rewrite: path => path.replace(/^\/api/, '') } },
   },
   preview: { port: 4175, strictPort: true },
 }));
