@@ -6,7 +6,7 @@ React Web mobile-first yang hidup berdampingan dengan React Native Customer. Tid
 
 Alur Web -> backend aktual -> PostgreSQL fixture -> DP -> auto confirmation -> proses Staff -> pelunasan -> invoice telah diuji, dengan provider Midtrans MOCK. Ini bukan bukti transaksi Sandbox/provider nyata.
 
-**Database existing belum dimigrasikan dan backend development port3000 belum dialihkan.** Aktivasi memerlukan persetujuan sesuai laporan backend `GUEST-MIGRATION-PLAN.md`. Sampai itu dilakukan, request guest ke backend original dapat mengembalikan belum tersedia; jangan menyatakan rollout selesai.
+**Database existing sudah dimigrasikan setelah persetujuan user dan backend kompatibel aktif di port3000.** Backup serta snapshot22 existing terverifikasi identik sebelum/sesudah DDL. Satu Snap Sandbox DP dummy Rp5.000 berhasil disiapkan, tetapi user menunda pembayaran; settlement dan konfirmasi otomatis provider nyata masih DEFERRED. Helper checkout lokal telah ditutup. Rincian ada pada laporan backend `GUEST-MIGRATION-PLAN.md` dan `GUEST-BOOKING-AUDIT.md`.
 
 ## Menjalankan
 

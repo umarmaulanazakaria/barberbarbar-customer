@@ -16,9 +16,9 @@
 | Replay settlement, dua kredit DP+pelunasan dan satu invoice | PASS |
 | Token tidak berada pada URL request backend | PASS |
 | Lima lebar viewport UI lama dan invoice nyata fixture | PASS: 320,375,430,768,1440 |
-| Midtrans provider Sandbox nyata | DEFERRED, belum dibuat transaksi |
+| Midtrans provider Sandbox nyata | Snap DP Rp5.000 siap; pembayaran/settlement DEFERRED atas permintaan user |
 | Android Native/Staff device | DEFERRED, bukan klaim dari API/browser |
-| Migration/aktivasi database existing | DEFERRED, menunggu persetujuan |
+| Migration/aktivasi database existing | PASS, disetujui dan diterapkan; backend kompatibel aktif pada3000 |
 
 UI nyata menampilkan status backend, terpisah dari route demo. Seluruh API booking memakai header Guest dan cache no-store; referrer no-referrer. Tidak mengirim harga, diskon, pilihan barber atau nominal checkout dari form. Tidak menyimpan token/PII ke storage atau log. Token pribadi berada pada hash link browser agar tidak menjadi URL request HTTP backend. Client Key Snap publik dibaca dari respons backend; Server Key tidak pernah masuk frontend.
 
@@ -30,8 +30,10 @@ POST `/guest/bookings`, GET `/guest/bookings/current`, POST `/guest/bookings/cur
 
 ## Keterbatasan
 
-Rollout database existing belum dilaksanakan. `GUEST_BOOKING_ENABLED` backend harus diaktifkan hanya setelah migration disetujui dan writer backend lama sudah diganti runtime kompatibel. React Native original tidak diubah, memakai endpoint lama dan JWT existing. Project4 tidak diubah; integrasi Staff dibuktikan melalui API serta Socket.IO/REST, bukan klik perangkat.
+Dua migration additive sudah disetujui dan diterapkan pada database existing. Backup terbaru terverifikasi dan snapshot22 domain sebelum/sesudah DDL identik. Writer backend lama telah dihentikan dan diganti runtime kompatibel pada port3000 dengan `GUEST_BOOKING_ENABLED=true`, database dan konfigurasi JWT/Sandbox existing yang sama. React Native original tidak diubah, memakai endpoint lama dan JWT existing. Project4 tidak diubah; integrasi Staff dibuktikan melalui API serta Socket.IO/REST, bukan klik perangkat.
 
 Nomor HP guest belum bukti kepemilikan. Backend memakai identitas guest terpisah, tanpa diskon membership atau akses akun lama. Kontak guest tersedia sebagai tambahan DTO operator; tampilan kontak Staff lama belum dimodifikasi. Idempotency create mencegah duplikasi tetapi tautan yang hilang sebelum respons diterima belum dapat dipulihkan.
 
-Tidak ada dependency baru, migration existing, transaksi provider nyata, push atau PR pada pekerjaan ini. Rincian SQL, capacity lock, refund review dan backup terverifikasi ada di worktree backend: `server/GUEST-BOOKING-AUDIT.md` dan `server/GUEST-MIGRATION-PLAN.md`.
+Satu Snap Sandbox dummy Rp5.000 dibuat sesuai persetujuan; user kemudian menunda pembayaran. Helper checkout lokal ditutup tanpa membuat pembayaran/refund tambahan. Audit read-only: booking AWAITING_DP, satu intent PENDING, nol kredit berhasil/invoice/bukti provider; Get Status resmi404 karena metode pembayaran belum diproses. Deadline dummy 16 Oktober 2026 12.47 WIB, setelah itu scheduler menangani expiry; pembatalan aktual belum diklaim sebelum diamati. Seluruh row existing pada snapshot22 kembali diverifikasi identik setelah fixture ditambahkan.
+
+Tidak ada dependency baru, perubahan .env original, push atau PR. Rincian SQL, capacity lock, refund review dan backup terverifikasi ada di worktree backend: `server/GUEST-BOOKING-AUDIT.md` dan `server/GUEST-MIGRATION-PLAN.md`.
