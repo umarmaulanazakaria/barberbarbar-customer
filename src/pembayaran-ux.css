@@ -1,0 +1,55 @@
+.halaman-pembayaran-ux { padding: 28px 0; --aksi-pembayaran: #575bd8; }
+.judul-pembayaran h1 { font-size: clamp(28px, 6vw, 40px); margin: 10px 0 14px; overflow-wrap: anywhere; }
+.judul-pembayaran > p { font-size: 14px; color: var(--muted); }
+.judul-pembayaran strong { color: #f1f5f9; overflow-wrap: anywhere; }
+.status-booking-ux { display: inline-block; font-size: 13px; color: #c2c7ff; margin-top: 10px; }
+.tab-pembayaran { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 24px 0 18px; border-bottom: 1px solid var(--line); }
+.tab-pembayaran a { min-height: 44px; display: grid; place-items: center; font-size: 14px; border-bottom: 2px solid transparent; }
+.tab-pembayaran a[aria-current] { border-color: var(--indigo); color: #c3c5ff; }
+.status-pembayaran-ux { border-left: 3px solid var(--indigo); padding: 12px 16px; background: var(--panel); border-radius: 0 8px 8px 0; font-size: 14px; margin-bottom: 20px; }
+.status-pembayaran-ux.berhasil { border-color: #8addb4; }
+.status-pembayaran-ux.peringatan { border-color: #e7c488; }
+.grid-pembayaran-ux { display: grid; gap: 16px; align-items: start; }
+.grid-pembayaran-ux > * { min-width: 0; }
+.halaman-pembayaran-ux .panel { padding: 20px; }
+.halaman-pembayaran-ux h2 { font-size: 20px; display: flex; align-items: center; gap: 10px; }
+.halaman-pembayaran-ux h3 { font-size: 16px; margin-top: 22px; }
+.halaman-pembayaran-ux .teks-sekunder, .privasi-pembayaran { color: var(--muted); font-size: 13px; line-height: 1.65; }
+.jadwal-ux { font-weight: 650; margin-top: 16px; font-size: 16px; }
+.detail-kunjungan-ux, .rincian-biaya-ux { display: grid; gap: 12px; margin: 18px 0; font-size: 14px; }
+.detail-kunjungan-ux > div, .rincian-biaya-ux > div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.detail-kunjungan-ux dt, .rincian-biaya-ux dt { color: var(--muted); }
+.detail-kunjungan-ux dd, .rincian-biaya-ux dd { margin: 0; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.rincian-biaya-ux dd { font-weight: 650; font-variant-numeric: tabular-nums; }
+.layanan-pembayaran { list-style: none; margin: 10px 0 0; padding: 0; }
+.layanan-pembayaran li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.layanan-pembayaran li strong { overflow-wrap: anywhere; }
+.layanan-pembayaran small { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+.biaya-ux > .eyebrow { font-size: 10px; }
+.biaya-ux h2 { margin-top: 10px; font-size: 17px; color: #d4d6ff; }
+.nominal-utama-ux { font-size: clamp(32px,7vw,42px); font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.3; margin-top: 8px; overflow-wrap: anywhere; }
+.batas-dp-ux { border: 1px solid #454a73; background: #242d48; border-radius: 10px; padding: 14px; margin: 20px 0; }
+.batas-dp-ux > div { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.batas-dp-ux span { font-size: 13px; max-width: 110px; }
+.batas-dp-ux strong { font-size: 30px; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.batas-dp-ux p { font-size: 13px; margin-top: 10px; color: #cbd5e1; }
+.batas-dp-ux.peringatan { border-color: #d6b576; background: #332f32; }
+.halaman-pembayaran-ux .tombol { min-height: 48px; font-size: 14px; }
+.halaman-pembayaran-ux .utama { background: var(--aksi-pembayaran); }
+.halaman-pembayaran-ux .utama:hover:not(:disabled) { background: #6266e3; }
+.biaya-ux > .tombol { margin-top: 14px; }
+.halaman-pembayaran-ux .tombol-teks { min-height: 44px; font-size: 13px; }
+.biaya-ux > .teks-sekunder { margin-top: 12px; }
+.halaman-pembayaran-ux .pesan { font-size: 14px; }
+.halaman-pembayaran-ux .kode-tracking { font-size: 16px; }
+.halaman-pembayaran-ux .baris-ringkas { font-size: 14px; }
+.halaman-pembayaran-ux .baris-ringkas small { font-size: 13px; }
+.riwayat-ux > p, .tracking-ux > p { margin-top: 12px; font-size: 14px; }
+.privasi-pembayaran { margin: 22px 0; }
+@media(max-width:767px) { .mode-pembayaran .biaya-ux { grid-row: 1; } }
+@media(min-width:768px) {
+  .halaman-pembayaran-ux { padding-top: 40px; }
+  .grid-pembayaran-ux { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 20px; }
+  .biaya-ux { grid-column: 2; grid-row: 1 / span 3; }
+  .kunjungan-ux, .tracking-ux, .riwayat-ux { grid-column: 1; }
+}

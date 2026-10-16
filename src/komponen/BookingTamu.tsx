@@ -15,6 +15,7 @@ import { buatKunciIdempotensi } from "../layanan/idempotensi";
 import { salinAtauPilihKode } from "../layanan/salin";
 import { Ikon } from "./Ikon";
 import "../tracking.css";
+import RingkasanPembayaran, { bookingDikonfirmasi } from "./RingkasanPembayaran";
 
 const labelStatus: Record<string, string> = {
   AWAITING_DP: "Menunggu pembayaran DP",
@@ -153,6 +154,8 @@ export default function BookingTamu({
     kunci.current = true;
     aturSibuk(true);
     aturError("");
+    let popupTerbuka = false;
+    let callbackSelesai = false;
     try {
       const checkout = await checkoutGuest(
         data.booking.status === "COMPLETED" ? "PELUNASAN" : "DP",
@@ -162,23 +165,36 @@ export default function BookingTamu({
         throw new Error("Checkout Sandbox belum tersedia.");
       await muatSnap(checkout.clientKey);
       if (!terpasang.current) return;
+      const tutupPopup = () => {
+        if (callbackSelesai) return false;
+        callbackSelesai = true;
+        popupTerbuka = false;
+        kunci.current = false;
+        if (!terpasang.current) return false;
+        aturSibuk(false);
+        return true;
+      };
       const periksa = () => {
+        if (!tutupPopup()) return;
         aturPesan(
           "Memeriksa pembayaran Anda. Status akan diperbarui setelah pembayaran terverifikasi.",
         );
         void muat(true);
       };
+      popupTerbuka = true;
       window.snap!.pay(checkout.token, {
         language: "id",
         onSuccess: periksa,
         onPending: periksa,
         onError: () => {
+          if (!tutupPopup()) return;
           aturPesan(
             "Checkout mengalami kendala. Periksa status sebelum mengulang pembayaran.",
           );
           void muat(true);
         },
         onClose: () => {
+          if (!tutupPopup()) return;
           aturPesan(
             "Pembayaran ditutup. Periksa status sebelum mencoba membayar kembali.",
           );
@@ -187,16 +203,19 @@ export default function BookingTamu({
       });
       await muat();
     } catch (e) {
+      popupTerbuka = false;
       if (terpasang.current)
         aturError(
           e instanceof Error ? e.message : "Checkout belum dapat dibuka.",
         );
     } finally {
-      kunci.current = false;
-      if (terpasang.current) aturSibuk(false);
+      if (!popupTerbuka) {
+        kunci.current = false;
+        if (terpasang.current) aturSibuk(false);
+      }
     }
   };
-  useEffect(()=>{if(!data?.ringkasan.dpTerverifikasi||kode)return;let aktif=true;const versi=versiAkses.current;void kodeTrackingGuest().then(r=>{if(aktif && versi===versiAkses.current)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,kode]);
+  useEffect(()=>{if (!bookingDikonfirmasi(data) || kode) return;let aktif=true;const versi=versiAkses.current;void kodeTrackingGuest().then(r=>{if(aktif && versi===versiAkses.current)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,data?.booking.dikonfirmasiPada,kode]);
   const salin=async()=>{if(!kode)return;try{const disalin=await salinAtauPilihKode(kode,document.querySelector<HTMLElement>('[data-testid="kode-tracking"]'));aturPesan(disalin?"Kode tracking disalin. Simpan dan jangan bagikan kepada orang lain.":"Kode tracking dipilih. Tekan lama kode lalu pilih Salin, atau gunakan Ctrl+C pada laptop.")}catch{aturPesan("Pilih kode di atas untuk menyalinnya secara manual.")}};
   if (!data)
     return (
@@ -223,6 +242,8 @@ export default function BookingTamu({
     b.status === "COMPLETED" && u.dpTerverifikasi && u.balance > 0;
   const final =
     b.status === "COMPLETED" && u.statusPembayaran === "PAID" && !!u.invoice;
+
+  if (["ringkasan", "pembayaran"].includes(halaman)) return <RingkasanPembayaran data={data} halaman={halaman === "pembayaran" ? "pembayaran" : "ringkasan"} sekarang={sekarang} sibuk={sibuk} error={error} pesan={pesan} kode={kode} labelStatus={labelStatus} bayar={bukaSnap} perbarui={muat} salin={salin}/>;
 
   return (
     <div className="halaman-pratinjau">
