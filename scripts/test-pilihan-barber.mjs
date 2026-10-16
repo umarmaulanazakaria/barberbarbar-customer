@@ -3,6 +3,32 @@ import { build } from 'esbuild';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
+import ts from "typescript";
+
+function periksaPemakaianDropdown(kode) {
+  const sumber = ts.createSourceFile("Booking.tsx", kode, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const pemakaian = [];
+  const kunjungi = (node) => {
+    if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(sumber) === "PilihanBerpencarian") {
+      pemakaian.push(node);
+    }
+    ts.forEachChild(node, kunjungi);
+  };
+  kunjungi(sumber);
+  assert.equal(pemakaian.length, 2, "Booking baru dan reschedule masing-masing wajib memakai dropdown");
+  const layar = pemakaian.map((node) => {
+    let induk = node.parent;
+    while (induk && !ts.isFunctionDeclaration(induk)) induk = induk.parent;
+    const atribut = new Map(node.attributes.properties.filter(ts.isJsxAttribute).map((a) => [a.name.getText(sumber), a]));
+    for (const nama of ["pilihan", "nilai", "ubah", "memuat", "error", "ulang", "nonaktif"]) {
+      assert.ok(atribut.has(nama), `Dropdown wajib mempertahankan prop ${nama}`);
+    }
+    assert.equal(atribut.get("nilai").initializer?.expression?.getText(sumber), "draf.barberPilihanId");
+    assert.match(atribut.get("ubah").initializer?.expression?.getText(sumber) ?? "", /setDraf/);
+    return induk?.name?.text;
+  });
+  assert.deepEqual(layar.sort(), ["LayarBooking", "LayarJadwalUlang"]);
+}
 
 // Jalankan komponen TSX aktual dengan adapter hooks/host native; bukan renderer/device RN.
 const temporary = path.resolve('node_modules/.cache/test-pilihan-barber.mjs');
@@ -37,6 +63,11 @@ try {
  tree=render({nonaktif:true});assert.equal(find(tree,'Pressable',n=>'expanded' in(n.props.accessibilityState??{})).props.disabled,true);selected=7;tree=render({pilihan:[options[0]]});assert.ok(nodes(tree).some(n=>n.props?.children==='Barber pilihan tidak lagi tersedia. Silakan pilih ulang.'));assert.equal(selected,7);pass('Disabled dan barber hilang memberi informasi tanpa mengganti ID menjadi null diam-diam');
  const keyboard=find(tree,'KeyboardAvoidingView');assert.equal(keyboard.props.behavior,'height');assert.equal(keyboard.props.pointerEvents,'box-none');tree=render();list=find(tree,'FlatList');assert.equal(list.props.keyboardShouldPersistTaps,'handled');assert.equal(list.props.keyboardDismissMode,'on-drag');assert.ok(nodes(tree).some(n=>n.props?.accessibilityViewIsModal));pass('Konfigurasi Android keyboard, safe-area container, FlatList/taps/a11y terpasang; bukan bukti keyboard native');
  hooks.reset();selected=9;tree=render();assert.ok(find(tree,'Pressable',n=>'expanded' in(n.props.accessibilityState??{})).props.accessibilityLabel.endsWith('Barber BETA'));assert.equal(changes,before);pass('Remount komponen mempertahankan pilihan controlled dari draf parent');
- const bookingSource=await readFile('src/layar/Booking.tsx','utf8');assert.equal((bookingSource.match(/<PilihanBerpencarian /g)??[]).length,2);assert.ok(!bookingSource.includes('barber.data?.map(b => <Tombol'));assert.ok(!bookingSource.includes('barbers.data?.map(b => <Tombol'));pass('Booking baru dan reschedule memakai komponen yang sama; daftar tombol lama dihapus');
+ const bookingSource=await readFile('src/layar/Booking.tsx','utf8');periksaPemakaianDropdown(bookingSource);assert.ok(!bookingSource.includes('barber.data?.map(b => <Tombol'));assert.ok(!bookingSource.includes('barbers.data?.map(b => <Tombol'));pass('Booking baru dan reschedule memakai komponen yang sama; daftar tombol lama dihapus');
+ assert.doesNotThrow(() => periksaPemakaianDropdown(bookingSource.replace(/<PilihanBerpencarian\s+/g, "<PilihanBerpencarian ")));
+  assert.throws(() => periksaPemakaianDropdown(bookingSource.replace(/<PilihanBerpencarian(?=\s)/, "<KomponenLain")), /masing-masing wajib/);
+  assert.throws(() => periksaPemakaianDropdown(bookingSource.replace("nilai={draf.barberPilihanId}", "nilai={null}")));
+  assert.throws(() => periksaPemakaianDropdown("// <PilihanBerpencarian /> <PilihanBerpencarian />"), /masing-masing wajib/);
+  pass("AST tahan pemformatan; dropdown hilang, binding salah dan JSX dalam komentar tetap ditolak");
  console.log(`TOTAL ${total} kelompok dropdown PASS; sentuhan/device/navigasi native DEFERRED.`);
 } finally { await unlink(temporary).catch(()=>{}); }

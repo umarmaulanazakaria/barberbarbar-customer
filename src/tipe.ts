@@ -41,6 +41,7 @@ export type Booking = {
   nomorBooking: string;
   status: string;
   mulaiPada: string;
+  alasanPenolakan?: string | null;
   selesaiPada: string;
   durasiMenit: number;
   barberPilihanId: number | null;
@@ -83,6 +84,7 @@ export type Ringkasan = {
   jumlahRefund: number;
   balance: number;
   dpTerverifikasi: boolean;
+  pembayaranPercobaan?: boolean;
   statusPembayaran: string;
   invoiceSementara: boolean;
   invoice: { nomorInvoice: string; total: number; dibuatPada: string } | null;
