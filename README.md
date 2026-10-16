@@ -1,6 +1,6 @@
 # BARBER BARBAR — Customer Web
 
-**Aplikasi Customer utama dan satu-satunya target pengembangan Customer aktif**, memakai React + TypeScript + Vite. React Native Customer dipensiunkan sebagai arsip, tanpa menghapus source, perubahan lokal atau data pusat. Mobile Staff tetap React Native + Expo. Tidak memakai runtime Expo/React Native Web.
+**Aplikasi Customer utama dan satu-satunya target pengembangan Customer aktif**, memakai React + TypeScript + Vite. Source Native lama diamankan dalam backup privat di luar workspace; riwayat Git dan data pusat tetap dipertahankan. Mobile Staff tetap React Native + Expo. Tidak memakai runtime Expo/React Native Web.
 
 Keputusan dan audit migrasi: [Customer Web utama](../barberbarbar/docs/CUSTOMER-WEB-UTAMA.md).
 
@@ -68,7 +68,7 @@ Baru: `src/layanan/guest.ts`, `src/layanan/snap.ts`, `src/komponen/BookingTamu.t
 
 Diubah: App, form existing, façade kontrak, config Vite/Playwright/TypeScript, index referrer policy, environment example, npm script dan dokumentasi. Desain, katalog, validasi, estimasi dan seluruh tes UI awal dipertahankan. `docs/REACT-WEB-AUDIT.md` adalah snapshot UI awal commit5afa3b6.
 
-Native arsip dan Web masih tercatat sebagai dua worktree dalam satu repository Git. Native pada `barberbarbar-customer`, Web pada branch `feat/project5-react-web-mobile-first`. Backend pusat pada source asli `barberbarbar`, branch `feature/project5-integration`. Semua perubahan hanya commit lokal. **Tidak ada push, PR, merge atau deploy Production.**
+Customer Web kini repository mandiri pada folder `barberbarbar-customer-web`, branch `feat/project5-react-web-mobile-first`. Repository GitHub existing `umarmaulanazakaria/barberbarbar-customer` memakai React Web pada branch default `main`. Riwayat Native tetap tersimpan dalam Git dan arsip pemulihan; tidak ada repository GitHub tambahan.
 
 ## Validasi aplikasi Customer utama
 

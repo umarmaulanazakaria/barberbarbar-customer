@@ -1,7 +1,9 @@
 $ErrorActionPreference = 'Stop'
 $akarCustomer = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $akarStage = [IO.Path]::GetFullPath((Join-Path $akarCustomer '..'))
-$jalurArsip = Join-Path $akarStage 'BARBERBARBAR-F12-CUSTOMER-APP.zip'
+$folderCadangan = Join-Path $env:LOCALAPPDATA 'BARBERBARBAR\source-backups'
+New-Item -ItemType Directory -Force -Path $folderCadangan | Out-Null
+$jalurArsip = Join-Path $folderCadangan ('CUSTOMER-WEB-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.zip')
 if (Test-Path -LiteralPath $jalurArsip) { throw 'ZIP sudah ada. Pertahankan backup lama; pilih lokasi baru sebelum menjalankan ulang.' }
 $safeCustomer = $akarCustomer.Replace('\','/')
 $statusCustomer = & git -c "safe.directory=$safeCustomer" -C $akarCustomer status --porcelain
@@ -17,14 +19,14 @@ foreach ($berkas in $berkasCustomer) {
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zipCustomer = [IO.Compression.ZipFile]::Open($jalurArsip, [IO.Compression.ZipArchiveMode]::Create)
-try { foreach ($berkas in $berkasCustomer) { [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipCustomer, (Join-Path $akarCustomer $berkas), ('barberbarbar-customer/' + $berkas.Replace('\','/')), [IO.Compression.CompressionLevel]::Optimal) | Out-Null } }
+try { foreach ($berkas in $berkasCustomer) { [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipCustomer, (Join-Path $akarCustomer $berkas), ('barberbarbar-customer-web/' + $berkas.Replace('\','/')), [IO.Compression.CompressionLevel]::Optimal) | Out-Null } }
 finally { $zipCustomer.Dispose() }
 $hasilEntry = @()
 $bacaCustomer = [IO.Compression.ZipFile]::OpenRead($jalurArsip)
 try {
  if ($bacaCustomer.Entries.Count -ne $berkasCustomer.Count) { throw 'Jumlah entry berbeda.' }
  foreach ($entry in $bacaCustomer.Entries) {
-  $relatif = $entry.FullName.Substring('barberbarbar-customer/'.Length)
+  $relatif = $entry.FullName.Substring('barberbarbar-customer-web/'.Length)
   if ($relatif -notin $berkasCustomer) { throw 'Entry tidak ada pada daftar source.' }
   $stream = $entry.Open(); $sha = [Security.Cryptography.SHA256]::Create()
   try { $hashEntry = [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-','').ToLowerInvariant() } finally { $stream.Dispose(); $sha.Dispose() }
