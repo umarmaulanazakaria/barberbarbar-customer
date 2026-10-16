@@ -1,3 +1,11 @@
+# Status aplikasi: dipensiunkan
+
+Mulai 16 Oktober 2026, **Customer Web merupakan satu-satunya aplikasi Customer aktif**. Gunakan `../barberbarbar-customer-web` pada http://127.0.0.1:5175 dengan backend Project 3 yang sama. Aplikasi ini disimpan sebagai arsip pembelajaran dan kompatibilitas historis, bukan target pengembangan atau launcher default.
+
+Source, riwayat Git, perubahan lokal, akun/member, booking, transaksi dan invoice tetap dipertahankan. Endpoint CUSTOMER dan deep link historis belum dihapus. Instruksi Expo di bawah hanya untuk reproduksi arsip; tidak diperlukan pada workflow Customer Web tanpa akun dan tanpa memilih barber.
+
+---
+
 # BARBER BARBAR — Customer Mobile App
 
 Aplikasi customer untuk melihat layanan, mengajukan membership, membuat booking, dan mengikuti status layanan serta pembayaran. Aplikasi memakai backend pusat yang juga digunakan Web Management dan Mobile Staff.
