@@ -5,10 +5,13 @@ import {
   detailGuest,
   invoiceGuest,
   sinkronGuest,
+  kodeTrackingGuest,
+  KesalahanGuest,
   type DetailTamu,
 } from "../layanan/guest";
 import { muatSnap } from "../layanan/snap";
 import { Ikon } from "./Ikon";
+import "../tracking.css";
 
 const labelStatus: Record<string, string> = {
   AWAITING_DP: "Menunggu pembayaran DP",
@@ -35,12 +38,11 @@ const tanggal = (iso: string) =>
     timeStyle: "short",
   }).format(new Date(iso)) + " WIB";
 export default function BookingTamu({
-  token,
   halaman,
 }: {
-  token: string;
   halaman: "ringkasan" | "detail" | "pembayaran" | "invoice";
 }) {
+  const [kode,aturKode]=useState<string|null>(null);
   const [data, aturData] = useState<DetailTamu | null>(null),
     [error, aturError] = useState(""),
     [pesan, aturPesan] = useState("");
@@ -62,13 +64,14 @@ export default function BookingTamu({
       const nomor = ++urutan.current;
       try {
         const hasil = await (sinkron
-          ? sinkronGuest(token)
-          : detailGuest(token));
+          ? sinkronGuest()
+          : detailGuest());
         if (nomor !== urutan.current || !terpasang.current) return;
         simpan(hasil);
         aturError("");
         return hasil;
       } catch (e) {
+        if(e instanceof KesalahanGuest && e.status===404){aturData(null);aturKode(null);}
         if (nomor === urutan.current && terpasang.current)
           aturError(
             e instanceof Error ? e.message : "Status belum dapat dimuat.",
@@ -76,7 +79,7 @@ export default function BookingTamu({
         return undefined;
       }
     },
-    [token, simpan],
+    [simpan],
   );
   useEffect(() => {
     terpasang.current = true;
@@ -110,12 +113,12 @@ export default function BookingTamu({
       document.removeEventListener("visibilitychange", fokus);
       window.removeEventListener("online", fokus);
     };
-  }, [muat]);
+  }, [muat, halaman]);
   useEffect(() => {
     if (halaman !== "invoice") return;
     let aktif = true;
     aturInvoiceDisahkan(false);
-    void invoiceGuest(token)
+    void invoiceGuest()
       .then((hasil) => {
         if (aktif) {
           simpan(hasil);
@@ -134,7 +137,7 @@ export default function BookingTamu({
     return () => {
       aktif = false;
     };
-  }, [halaman, token, simpan]);
+  }, [halaman, simpan]);
   const bukaSnap = async () => {
     if (kunci.current || !data) return;
     kunci.current = true;
@@ -142,7 +145,6 @@ export default function BookingTamu({
     aturError("");
     try {
       const checkout = await checkoutGuest(
-        token,
         data.booking.status === "COMPLETED" ? "PELUNASAN" : "DP",
         crypto.randomUUID(),
       );
@@ -184,31 +186,22 @@ export default function BookingTamu({
       if (terpasang.current) aturSibuk(false);
     }
   };
-  const salin = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        new URL(`#/b/${token}`, window.location.href).href,
-      );
-      aturPesan(
-        "Tautan pribadi disalin. Simpan dan jangan bagikan kepada orang lain.",
-      );
-    } catch {
-      aturPesan("Pilih tautan di bawah untuk menyalinnya secara manual.");
-    }
-  };
+  useEffect(()=>{if(!data?.ringkasan.dpTerverifikasi||kode)return;let aktif=true;void kodeTrackingGuest().then(r=>{if(aktif)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,kode]);
+  const salin=async()=>{if(!kode)return;try{await navigator.clipboard.writeText(kode);aturPesan("Kode tracking disalin. Simpan dan jangan bagikan kepada orang lain.")}catch{aturPesan("Pilih kode di atas untuk menyalinnya secara manual.")}};
   if (!data)
     return (
       <section className="halaman-kosong panel">
         <span className="ikon-besar">
           <Ikon nama="perisai" ukuran={30} />
         </span>
-        <h1 tabIndex={-1}>Booking pribadi</h1>
+        <h1 tabIndex={-1}>Booking Anda</h1>
         <p role={error ? "alert" : "status"}>
-          {error || "Memuat booking melalui tautan pribadi…"}
+          {error || "Memuat booking pada browser ini..."}
         </p>
         <button className="tombol utama" onClick={() => void muat()}>
           Perbarui status
         </button>
+        <a className="tombol sekunder" href="#/lacak">Lacak Booking</a>
       </section>
     );
   const b = data.booking,
@@ -220,14 +213,14 @@ export default function BookingTamu({
     b.status === "COMPLETED" && u.dpTerverifikasi && u.balance > 0;
   const final =
     b.status === "COMPLETED" && u.statusPembayaran === "PAID" && !!u.invoice;
-  const tautan = new URL(`#/b/${token}`, window.location.href).href;
+
   return (
     <div className="halaman-pratinjau">
       <div className="judul-halaman pusat">
         <span className="ikon-besar">
           <Ikon nama={u.dpTerverifikasi ? "cek" : "kalender"} ukuran={28} />
         </span>
-        <span className="eyebrow">BOOKING PRIBADI • SANDBOX</span>
+        <span className="eyebrow">BOOKING ANDA</span>
         <h1 tabIndex={-1}>
           {halaman === "invoice"
             ? "Invoice booking"
@@ -235,7 +228,7 @@ export default function BookingTamu({
               ? "Pembayaran booking"
               : halaman === "detail"
                 ? "Detail booking"
-                : "Booking telah dibuat."}
+                : kode && b.status === "CONFIRMED" ? "Pembayaran DP berhasil" : "Booking Anda"}
         </h1>
         <p>
           Nomor booking{" "}
@@ -245,19 +238,19 @@ export default function BookingTamu({
       </div>
       <nav className="tab-pratinjau" aria-label="Halaman booking">
         <a
-          href={`#/b/${token}`}
+          href={"#/kunjungan"}
           aria-current={halaman === "ringkasan" ? "page" : undefined}
         >
           Ringkasan
         </a>
         <a
-          href={`#/b/${token}/detail`}
+          href={"#/kunjungan/detail"}
           aria-current={halaman === "detail" ? "page" : undefined}
         >
           Detail
         </a>
         <a
-          href={`#/b/${token}/pembayaran`}
+          href={"#/kunjungan/pembayaran"}
           aria-current={halaman === "pembayaran" ? "page" : undefined}
         >
           Pembayaran
@@ -304,6 +297,7 @@ export default function BookingTamu({
                 <dt>Jadwal</dt>
                 <dd>{tanggal(b.mulaiPada)}</dd>
               </div>
+              <div><dt>Barber</dt><dd>{b.barber ?? "Belum ditentukan"}</dd></div>
               <div>
                 <dt>Durasi</dt>
                 <dd>{b.durasiMenit} menit</dd>
@@ -337,28 +331,10 @@ export default function BookingTamu({
               </div>
             )) : <p>Belum ada transaksi pembayaran.</p>}
           </section>
-          {halaman === "ringkasan" && (
-            <section className="panel tautan-demo">
-              <h2>
-                <Ikon nama="tautan" /> Simpan tautan pribadimu
-              </h2>
-              <p>
-                Tautan ini memberikan akses booking dan pembayaran tanpa login.
-                Nomor booking saja tidak memberikan akses. Jangan bagikan tautan
-                ini.
-              </p>
-              <label htmlFor="tautan-pribadi">Tautan pribadi</label>
-              <input
-                id="tautan-pribadi"
-                value={tautan}
-                readOnly
-                onFocus={(e) => e.target.select()}
-              />
-              <button className="tombol sekunder" onClick={() => void salin()}>
-                Salin tautan pribadi
-              </button>
-            </section>
-          )}
+          {kode && <section className="panel"><h2>Kode Tracking Booking Anda</h2>{b.status==="CONFIRMED"&&<p>Booking Anda telah dikonfirmasi.</p>}<div className="kode-tracking" data-testid="kode-tracking">{kode}</div><p>Simpan kode ini untuk memantau booking Anda.</p><div className="tracking-aksi"><button className="tombol utama" onClick={()=>void salin()}>Salin Kode</button><a className="tombol sekunder" href="#/kunjungan/detail">Lihat Detail Booking</a></div></section>}
+          <section className="panel"><h2>Proses booking</h2><ol className="tahapan-tracking">{[
+            ["DP Terverifikasi",u.dpTerverifikasi],["Booking Dikonfirmasi",!!b.dikonfirmasiPada],["Check-in",!!b.checkInPada],["Sedang Dilayani",!!b.layananMulaiPada],["Layanan Selesai",!!b.layananSelesaiPada],["Pelunasan",u.statusPembayaran==="PAID"],["Selesai",final],
+          ].map(([label,selesai])=><li key={String(label)} data-selesai={Boolean(selesai)}>{label}</li>)}</ol></section>
           {halaman === "pembayaran" && (
             <section className="panel">
               <h2>Midtrans Sandbox</h2>
@@ -475,7 +451,7 @@ export default function BookingTamu({
             {halaman !== "pembayaran" && (dapatDp || dapatLunas) && (
               <a
                 className="tombol utama lebar"
-                href={`#/b/${token}/pembayaran`}
+                href={"#/kunjungan/pembayaran"}
               >
                 Lanjut ke pembayaran <Ikon nama="panah" />
               </a>
@@ -483,7 +459,7 @@ export default function BookingTamu({
             {final && (
               <a
                 className="tombol sekunder lebar"
-                href={`#/b/${token}/invoice`}
+                href={"#/kunjungan/invoice"}
               >
                 Lihat invoice final
               </a>
@@ -496,8 +472,7 @@ export default function BookingTamu({
               Perbarui status booking
             </button>
             <p className="catatan-privasi">
-              Tautan berlaku hingga {tanggal(b.aksesTamu.kedaluwarsaPada)}. Data
-              hanya dapat dibaca melalui token booking ini.
+              Akses browser ini terbatas waktunya. Simpan kode tracking setelah DP terverifikasi. Jika akses hilang, hubungi Admin untuk verifikasi identitas.
             </p>
           </section>
         </aside>

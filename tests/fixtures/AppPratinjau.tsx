@@ -110,13 +110,13 @@ export default function App() {
         })),
         kunciIdempotensi: idempotensi.current,
       });
-      if (!/^[0-9a-f]{64}$/.test(hasil.token))
+      if (!hasil.booking.nomorBooking)
         throw new Error(
           "Respons booking belum dapat dibaca. Jangan membuat pembayaran ulang.",
         );
       idempotensi.current = crypto.randomUUID();
       aturPratinjau(null);
-      window.location.hash = `/b/${hasil.token}`;
+      window.location.hash = "/kunjungan";
     } catch (e) {
       aturErrorBooking(
         e instanceof Error ? e.message : "Booking belum dapat dipastikan.",
@@ -133,7 +133,7 @@ export default function App() {
   const permintaanLayanan =
     Number(new URLSearchParams(rute.split("?")[1]).get("layanan")) || null;
   const pribadi =
-    /^\/b\/([a-f0-9]{64})(?:\/(detail|pembayaran|invoice))?$/.exec(jalur);
+    /^\/(?:kunjungan|b\/([a-f0-9]{64}))(?:\/(detail|pembayaran|invoice))?$/.exec(jalur);
   const nyata = guestAktif && !demo && !jalur.startsWith("/demo/");
   return (
     <>
@@ -304,7 +304,6 @@ export default function App() {
         ) : pribadi ? (
           <BookingTamu
             key={pribadi[1]}
-            token={pribadi[1]}
             halaman={
               (pribadi[2] ?? "ringkasan") as
                 | "ringkasan"

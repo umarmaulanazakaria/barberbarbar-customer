@@ -21,6 +21,11 @@ export type DetailTamu = {
     dibuatPada: string;
     deadlineDp: string;
     deadlinePelunasan: string | null;
+    barber: string | null;
+    dikonfirmasiPada: string | null;
+    checkInPada: string | null;
+    layananMulaiPada: string | null;
+    layananSelesaiPada: string | null;
     aksesTamu: { nama: string; nomorTelepon: string; kedaluwarsaPada: string };
     items: {
       layananId: number;
@@ -34,8 +39,6 @@ export type DetailTamu = {
   ringkasan: RingkasanTamu;
 };
 export type BookingTerbit = {
-  token: string;
-  tautanPribadi: string;
   booking: { nomorBooking: string };
   serverTime: string;
 };
@@ -51,7 +54,6 @@ export const guestAktif =
 async function permintaan<T>(
   jalur: string,
   method: "GET" | "POST",
-  token?: string,
   body?: unknown,
 ): Promise<T> {
   if (!guestAktif)
@@ -68,21 +70,18 @@ async function permintaan<T>(
     url.hash
   )
     throw new Error("Konfigurasi layanan tidak valid.");
-  if (token !== undefined && !/^[a-f0-9]{64}$/.test(token))
-    throw new Error("Tautan pribadi tidak valid.");
-  url.pathname = url.pathname.replace(/\/$/, "") + "/guest/bookings" + jalur;
+  url.pathname = url.pathname.replace(/\/$/, "") + "/guest/bookings/session" + jalur;
   let hasil: Response;
   try {
     hasil = await fetch(url, {
       method,
-      credentials: "omit",
+      credentials: "include",
       cache: "no-store",
       referrerPolicy: "no-referrer",
       signal: AbortSignal.timeout(20_000),
       headers: {
         Accept: "application/json",
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-        ...(token ? { Authorization: `Guest ${token}` } : {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
@@ -93,8 +92,12 @@ async function permintaan<T>(
   }
   if (!hasil.ok) {
     const pesan =
-      hasil.status === 404
-        ? "Tautan pribadi tidak valid atau tidak tersedia."
+      hasil.status === 503
+        ? "Booking online sedang tidak tersedia. Silakan coba lagi nanti atau hubungi Admin."
+        : hasil.status === 403
+        ? "Permintaan tidak diizinkan. Buka aplikasi dari alamat resminya dan coba lagi."
+        : hasil.status === 404
+        ? "Kode booking tidak ditemukan atau tidak valid."
         : hasil.status === 429
           ? "Terlalu banyak percobaan. Tunggu beberapa saat."
           : hasil.status === 409
@@ -102,33 +105,24 @@ async function permintaan<T>(
             : hasil.status === 400
               ? "Data atau jadwal tidak valid. Gunakan jam 09.00–23.00 WIB, maksimal 14 hari, minimal 3 jam untuk hari ini."
               : "Layanan booking belum tersedia atau status belum dapat dipastikan. Periksa kembali nanti.";
-    throw new Error(pesan);
+    throw new KesalahanGuest(hasil.status,pesan);
   }
   return hasil.json() as Promise<T>;
 }
-export const buatGuest = (data: {
-  nama: string;
-  nomorTelepon: string;
-  mulaiPada: string;
-  items: { layananId: number; qty: number }[];
-  kunciIdempotensi: string;
-}) => permintaan<BookingTerbit>("", "POST", undefined, data);
-export const detailGuest = (token: string) =>
-  permintaan<DetailTamu>("/current", "GET", token);
-export const sinkronGuest = (token: string) =>
-  permintaan<DetailTamu>("/current/sync", "POST", token, {});
-export const checkoutGuest = (
-  token: string,
-  tujuan: "DP" | "PELUNASAN",
-  kunciIdempotensi: string,
-) =>
-  permintaan<CheckoutTamu>("/current/checkout", "POST", token, {
-    tujuan,
-    kunciIdempotensi,
-  });
-export const invoiceGuest = (token: string) =>
-  permintaan<DetailTamu & { invoice: NonNullable<RingkasanTamu["invoice"]> }>(
-    "/current/invoice",
-    "GET",
-    token,
-  );
+export class KesalahanGuest extends Error { constructor(public status:number,pesan:string){super(pesan)} }
+export const buatGuest = (data: {nama:string;nomorTelepon:string;mulaiPada:string;items:{layananId:number;qty:number}[];kunciIdempotensi:string}) => permintaan<BookingTerbit>("","POST",data);
+export const detailGuest = async(token?:string) => {if(token)await imporLegacyGuest(token);return permintaan<DetailTamu>("/current","GET")};
+export const sinkronGuest = () => permintaan<DetailTamu>("/sync","POST",{});
+export function checkoutGuest(tujuan:"DP"|"PELUNASAN",kunciIdempotensi:string):Promise<CheckoutTamu>;
+export function checkoutGuest(token:string,tujuan:"DP"|"PELUNASAN",kunciIdempotensi:string):Promise<CheckoutTamu>;
+export async function checkoutGuest(a:string,b:string,c?:string){if(c)await imporLegacyGuest(a);return permintaan<CheckoutTamu>("/checkout","POST",{tujuan:c?b:a,kunciIdempotensi:c??b});}
+export const invoiceGuest = () => permintaan<DetailTamu & {invoice:NonNullable<RingkasanTamu["invoice"]>}>("/invoice","GET");
+export const kodeTrackingGuest = () => permintaan<{kode:string|null}>("/tracking","POST",{});
+export const lacakGuest = (kode:string) => permintaan<{berhasil:true}>("/track","POST",{kode});
+export const imporLegacyGuest = (token:string) => permintaan<{berhasil:true}>("/legacy","POST",{token});
+export const kesiapanGuest=async(signal?:AbortSignal)=>{
+ const url=new URL(import.meta.env.VITE_API_BASE_URL||"/api",window.location.origin);
+ if(!["http:","https:"].includes(url.protocol)||url.username||url.password||url.search||url.hash)throw Error("Konfigurasi layanan tidak valid.");
+ url.pathname=url.pathname.replace(/\/$/,"")+"/public/booking-availability";
+ const r=await fetch(url,{signal,credentials:"omit",cache:"no-store",referrerPolicy:"no-referrer"});if(!r.ok)return false;return(await r.json()).tersedia===true;
+};

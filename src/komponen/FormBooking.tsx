@@ -340,7 +340,7 @@ export default function FormBooking({
           <p className="catatan-privasi">
             <Ikon nama="perisai" ukuran={16} />{" "}
             {nyata
-              ? "Selesaikan DP dalam 15 menit untuk mengonfirmasi booking. Simpan tautan pribadi setelah booking dibuat."
+              ? "Selesaikan DP dalam 15 menit untuk mengonfirmasi booking. Kode tracking tersedia setelah DP terverifikasi."
               : "Tidak mengirim nama atau nomor HP ke server. Tidak membuat booking atau pembayaran."}
           </p>
         </aside>

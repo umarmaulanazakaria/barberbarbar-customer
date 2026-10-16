@@ -8,12 +8,21 @@ import { Ikon } from "./komponen/Ikon";
 import { Katalog, type SumberKatalog } from "./komponen/Katalog";
 import FormBooking from "./komponen/FormBooking";
 import BookingTamu from "./komponen/BookingTamu";
-import { buatGuest } from "./layanan/guest";
+import { buatGuest,imporLegacyGuest,kesiapanGuest } from "./layanan/guest";
+import LacakBooking from "./komponen/LacakBooking";
+
+const legacy=/^#\/b\/([a-f0-9]{64})(?:\/(detail|pembayaran|invoice))?$/.exec(window.location.hash);
+if(legacy)window.history.replaceState(null,"",window.location.pathname+window.location.search+"#/kunjungan"+(legacy[2]?"/"+legacy[2]:""));
+let imporLegacy:ReturnType<typeof imporLegacyGuest>|undefined;
 
 const bacaRute = () => window.location.hash.slice(1) || "/";
 export default function App() {
+  const [memulihkan,aturMemulihkan]=useState(Boolean(legacy)),[pesanLegacy,aturPesanLegacy]=useState("");
+  useEffect(()=>{if(!legacy)return;imporLegacy??=imporLegacyGuest(legacy[1]);let aktif=true;void imporLegacy.then(()=>{if(aktif)aturMemulihkan(false)}).catch(()=>{if(aktif){aturPesanLegacy("Akses lama belum dapat dipulihkan. Buka kembali akses yang Anda simpan atau hubungi Admin.");aturMemulihkan(false)}});return()=>{aktif=false}},[]);
   const [rute, aturRute] = useState(bacaRute),
     [ulangi, aturUlangi] = useState(0);
+  const [bookingSiap,aturBookingSiap]=useState<boolean|null>(null);
+  useEffect(()=>{const c=new AbortController();aturBookingSiap(null);void kesiapanGuest(c.signal).then(v=>{if(!c.signal.aborted)aturBookingSiap(v)}).catch(()=>{if(!c.signal.aborted)aturBookingSiap(false)});return()=>c.abort()},[ulangi]);
   const [layanan, aturLayanan] = useState<Layanan[]>([]),
     [memuat, aturMemuat] = useState(true),
     [error, aturError] = useState("");
@@ -90,12 +99,12 @@ export default function App() {
         })),
         kunciIdempotensi: idempotensi.current,
       });
-      if (!/^[0-9a-f]{64}$/.test(hasil.token))
+      if (!hasil.booking.nomorBooking)
         throw new Error(
           "Respons booking belum dapat dibaca. Jangan membuat pembayaran ulang.",
         );
       idempotensi.current = crypto.randomUUID();
-      window.location.hash = `/b/${hasil.token}`;
+      window.location.hash = "/kunjungan";
     } catch (e) {
       aturErrorBooking(
         e instanceof Error ? e.message : "Booking belum dapat dipastikan.",
@@ -107,8 +116,7 @@ export default function App() {
   };
   const permintaanLayanan =
     Number(new URLSearchParams(rute.split("?")[1]).get("layanan")) || null;
-  const pribadi =
-    /^\/b\/([a-f0-9]{64})(?:\/(detail|pembayaran|invoice))?$/.exec(jalur);
+  const pribadi = /^\/kunjungan(?:\/(detail|pembayaran|invoice))?$/.exec(jalur);
   const nyata = true;
   return (
     <>
@@ -137,6 +145,7 @@ export default function App() {
             >
               Layanan
             </a>
+            <a href="#/lacak" aria-current={jalur==="/lacak"?"page":undefined}>Lacak Booking</a>
           </nav>
           <a href="#/booking" className="tombol utama tombol-header">
             Booking sekarang <Ikon nama="panah" ukuran={17} />
@@ -258,7 +267,7 @@ export default function App() {
                 </h2>
                 <p>
                   {nyata
-                    ? "Buat booking tanpa akun. Simpan tautan pribadi dan bayar DP 50%."
+                    ? "Buat booking tanpa akun, bayar DP 50%, lalu simpan kode tracking Anda."
                     : "Jelajahi alur booking tanpa membuat pesanan sungguhan."}
                 </p>
               </div>
@@ -268,19 +277,17 @@ export default function App() {
               </a>
             </section>
           </>
-        ) : pribadi ? (
+        ) : jalur === "/lacak" ? <LacakBooking/> : memulihkan ? <section className="panel"><p role="status">Memulihkan akses booking…</p></section> : pesanLegacy ? <section className="panel"><p role="alert">{pesanLegacy}</p><a href="#/lacak">Lacak Booking</a></section> : pribadi ? (
           <BookingTamu
-            key={pribadi[1]}
-            token={pribadi[1]}
             halaman={
-              (pribadi[2] ?? "ringkasan") as
+              (pribadi[1] ?? "ringkasan") as
                 | "ringkasan"
                 | "detail"
                 | "pembayaran"
                 | "invoice"
             }
           />
-        ) : jalur === "/booking" ? (
+        ) : jalur === "/booking" && bookingSiap!==true ? <section className="panel"><h1>Booking Anda</h1><p role={bookingSiap===null?"status":"alert"}>{bookingSiap===null?"Memeriksa kesiapan booking...":"Booking online sedang tidak tersedia. Silakan coba lagi nanti atau hubungi Admin."}</p><button className="tombol utama" onClick={()=>aturUlangi(n=>n+1)}>Periksa kembali</button></section> : jalur === "/booking" ? (
           <FormBooking
             key={permintaanLayanan}
             sumber={sumber}
@@ -300,7 +307,7 @@ export default function App() {
               Halaman tidak ditemukan.
             </h1>
             <p>
-              Buka tautan pribadi untuk melihat booking Anda, atau kembali ke beranda untuk memilih layanan.
+              Gunakan kode tracking untuk membuka booking Anda, atau kembali ke beranda untuk memilih layanan.
             </p>
             <a href="#/booking" className="tombol utama">
               Buat rencana baru <Ikon nama="panah" />
@@ -316,7 +323,7 @@ export default function App() {
           <p>Rencanakan waktu. Temukan gaya.</p>
         </div>
         <p>
-          Simpan tautan pribadi untuk melihat booking dan pembayaran Anda.
+          Simpan kode tracking untuk melihat booking dan pembayaran Anda.
         </p>
       </footer>
       <nav className="nav-mobile" aria-label="Navigasi seluler">
@@ -335,6 +342,7 @@ export default function App() {
           <Ikon nama="kalender" />
           Booking
         </a>
+        <a href="#/lacak" aria-current={jalur==="/lacak"?"page":undefined}><Ikon nama="perisai"/>Lacak</a>
       </nav>
     </>
   );
