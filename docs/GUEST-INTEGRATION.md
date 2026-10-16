@@ -1,3 +1,5 @@
+> **Catatan status aktif 16 Oktober 2026:** laporan berikut adalah sejarah integrasi token guest awal. Aplikasi aktif kini menggunakan sesi HttpOnly dan kode tracking setelah DP terverifikasi; endpoint baru `/guest/bookings/session/*`. Token/hash link hanya untuk kompatibilitas legacy. Customer Native dipensiunkan sebagai arsip. Panduan aktif: [README](../README.md) dan [audit migrasi](../../barberbarbar/docs/CUSTOMER-WEB-UTAMA.md). Bukti provider historis bukan transaksi baru pada audit migrasi.
+
 # Integrasi guest Web — laporan aktual
 
 16 Oktober 2026 (WIB). Melanjutkan commit lokal `5afa3b684269f2523a0bf1e162e77fb5f580db05`, tanpa membuat ulang UI atau menghapus tes lama.
