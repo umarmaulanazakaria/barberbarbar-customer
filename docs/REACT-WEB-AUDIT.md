@@ -1,3 +1,5 @@
+> Snapshot historis UI awal commit 5afa3b6. Untuk status integrasi terbaru, lihat GUEST-INTEGRATION.md.
+
 # Audit React Web Customer terpisah
 
 Tanggal: 16 Oktober 2026 (WIB).

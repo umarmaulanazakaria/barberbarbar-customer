@@ -3,8 +3,9 @@ import { estimasi, normalisasiTelepon, rupiah, tanggalWib, validasiDraf, type Dr
 import { Ikon } from './Ikon';
 import { StatusKatalog, type SumberKatalog } from './Katalog';
 
-export default function FormBooking({ sumber, awal, layananAwal, lanjut }: {
+export default function FormBooking({ sumber, awal, layananAwal, lanjut, nyata=false, sibuk=false, pesan='' }: {
   sumber: SumberKatalog; awal: DrafBooking | null; layananAwal: number | null; lanjut: (draf: DrafBooking) => void;
+  nyata?:boolean; sibuk?:boolean; pesan?:string;
 }) {
   const [nama, aturNama] = useState(awal?.nama ?? ''), [telepon, aturTelepon] = useState(awal?.telepon ?? '');
   const [tanggal, aturTanggal] = useState(awal?.tanggal ?? ''), [jam, aturJam] = useState(awal?.jam ?? '');
@@ -30,9 +31,10 @@ export default function FormBooking({ sumber, awal, layananAwal, lanjut }: {
     <a href="#/" className="kembali"><Ikon nama="kembali" ukuran={16} /> Kembali ke beranda</a>
     <div className="judul-halaman"><span className="eyebrow">WAKTU UNTUK DIRIMU</span><h1 tabIndex={-1}>Rencanakan booking.</h1><p>Pilih layanan, tentukan waktu, dan isi data dirimu. Semudah itu.</p></div>
     <ol className="langkah" aria-label="Tahapan pratinjau"><li className="aktif"><span>01</span> Rencana</li><li><span>02</span> Ringkasan</li><li><span>03</span> Pembayaran</li></ol>
+    {pesan&&<p role="alert" className="pesan error">{pesan}</p>}
     <form noValidate onSubmit={kirim} ref={formulir} className="grid-form">
       <div className="isi-form">
-        <section className="panel"><div className="judul-panel"><span className="angka">01</span><div><h2>Kenalan dulu, yuk.</h2><p>Data hanya digunakan untuk pratinjau di tab ini.</p></div></div>
+        <section className="panel"><div className="judul-panel"><span className="angka">01</span><div><h2>Kenalan dulu, yuk.</h2><p>{nyata?'Data dikirim untuk booking ini. Tidak membuat atau mengakses akun.':'Data hanya digunakan untuk pratinjau di tab ini.'}</p></div></div>
           <div className="grid-dua"><div className="kolom"><label htmlFor="nama">Nama lengkap <span aria-hidden="true">*</span></label><input id="nama" name="nama" autoComplete="name" placeholder="Nama kamu" value={nama} maxLength={80} aria-invalid={!!salah.nama} aria-describedby={salah.nama ? 'error-nama' : undefined} onChange={e => aturNama(e.target.value)} />{salah.nama && <p className="error-kolom" id="error-nama">{salah.nama}</p>}</div>
           <div className="kolom"><label htmlFor="telepon">Nomor HP <span aria-hidden="true">*</span></label><input id="telepon" name="tel" type="tel" inputMode="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" value={telepon} maxLength={24} aria-invalid={!!salah.telepon} aria-describedby={salah.telepon ? 'error-telepon' : 'bantuan-telepon'} onChange={e => aturTelepon(e.target.value)} /><p id="bantuan-telepon" className="bantuan">Gunakan nomor HP Indonesia yang aktif.</p>{salah.telepon && <p className="error-kolom" id="error-telepon">{salah.telepon}</p>}</div></div>
         </section>
@@ -47,14 +49,14 @@ export default function FormBooking({ sumber, awal, layananAwal, lanjut }: {
         <section className="panel"><div className="judul-panel"><span className="angka">03</span><div><h2>Tentukan waktunya.</h2><p>Seluruh jadwal menggunakan Waktu Indonesia Barat.</p></div></div>
           <div className="grid-dua"><div className="kolom"><label htmlFor="tanggal">Tanggal layanan <span aria-hidden="true">*</span></label><input id="tanggal" type="date" min={tanggalWib()} value={tanggal} aria-invalid={!!salah.tanggal} aria-describedby={salah.tanggal ? 'error-tanggal' : undefined} onChange={e => aturTanggal(e.target.value)} />{salah.tanggal && <p className="error-kolom" id="error-tanggal">{salah.tanggal}</p>}</div>
           <div className="kolom"><label htmlFor="jam">Jam layanan (WIB) <span aria-hidden="true">*</span></label><input id="jam" type="time" value={jam} aria-invalid={!!salah.jam} aria-describedby={salah.jam ? 'error-jam' : undefined} onChange={e => aturJam(e.target.value)} />{salah.jam && <p className="error-kolom" id="error-jam">{salah.jam}</p>}</div></div>
-          <p className="catatan"><Ikon nama="kalender" ukuran={18} /> Ketersediaan jadwal belum diverifikasi. Ini belum memesan slot layanan.</p>
+          <p className="catatan"><Ikon nama="kalender" ukuran={18} /> {nyata?'Jam 09.00–23.00 WIB, maksimal 14 hari ke depan, minimal 3 jam untuk hari ini. Ketersediaan diverifikasi saat booking dibuat.':'Ketersediaan jadwal belum diverifikasi. Ini belum memesan slot layanan.'}</p>
         </section>
       </div>
       <aside className="panel ringkasan" aria-labelledby="judul-ringkasan"><span className="eyebrow">RENCANA KUNJUNGAN</span><h2 id="judul-ringkasan">Ringkasan pilihan</h2><div className="daftar-ringkas">{pilihan.length ? pilihan.map(p => <div className="baris-ringkas" key={p.layanan.id}><span>{p.layanan.nama}<small>{p.jumlah} × {rupiah(p.layanan.harga)}</small></span><strong>{rupiah(p.jumlah * p.layanan.harga)}</strong></div>) : <p className="kosong-ringkas">Pilih layanan favoritmu untuk melihat estimasi biaya.</p>}</div>
         <dl className="nilai-ringkas"><div><dt>Estimasi durasi</dt><dd>{ringkas.durasi} menit</dd></div><div><dt>Estimasi total</dt><dd data-testid="estimasi-total">{rupiah(ringkas.total)}</dd></div><div className="dp"><dt>Estimasi DP 50%</dt><dd data-testid="estimasi-dp">{rupiah(ringkas.dp)}</dd></div></dl>
         <p className="bantuan">Nominal ini hanya estimasi antarmuka. Tagihan final dan DP nantinya ditentukan backend.</p>
-        <button className="tombol utama lebar" type="submit">Lihat pratinjau booking <Ikon nama="panah" /></button>
-        <p className="catatan-privasi"><Ikon nama="perisai" ukuran={16} /> Tidak mengirim nama atau nomor HP ke server. Tidak membuat booking atau pembayaran.</p>
+        <button className="tombol utama lebar" type="submit" disabled={sibuk}>{sibuk?'Membuat booking…':nyata?'Buat booking dan lanjut ke DP':'Lihat pratinjau booking'} <Ikon nama="panah" /></button>
+        <p className="catatan-privasi"><Ikon nama="perisai" ukuran={16} /> {nyata?'Booking menahan kapasitas selama 15 menit. DP dan deadline final ditetapkan backend. Simpan tautan pribadi setelah booking dibuat.':'Tidak mengirim nama atau nomor HP ke server. Tidak membuat booking atau pembayaran.'}</p>
       </aside>
     </form>
   </div>;
