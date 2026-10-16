@@ -1,83 +1,84 @@
-# BARBER BARBAR — Customer App
+# BARBER BARBAR — Customer Web
 
-Aplikasi customer untuk melihat layanan, mengajukan membership, membuat booking, dan mengikuti status layanan serta pembayaran. Aplikasi memakai backend pusat yang juga digunakan Web Management dan Mobile Staff.
+React Web mobile-first untuk merencanakan kunjungan dari browser HP. React, TypeScript, Vite dan CSS responsif; tanpa runtime Expo, React Native atau React Native Web.
 
-Project untuk **tugas kuliah, pembelajaran Fullstack, portofolio, dan demonstrasi lokal**; bukan aplikasi Production. Hosting berbayar bukan kebutuhan demo. Mobile berhasil menurut laporan pengguna (**USER-REPORTED**); bukti rinci UI native/checkout Android belum lengkap. Email nyata, refund historis dan advisory tetap dicatat jujur. Lihat [acceptance demo](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/DEMO-ACCEPTANCE.md).
+> **Demo UI — belum terhubung ke proses booking/pembayaran.**
+> Hanya katalog layanan publik yang dapat dibaca dari backend. Tidak membuat booking, nomor booking server, token rahasia, pembayaran atau invoice.
 
-## Teknologi dan fitur
+## Dua versi, satu repository
 
-React Native 0.86, Expo SDK 57, React 19, TypeScript, React Navigation, React Query, Axios, SecureStore, Socket.IO, DateTimePicker, dan WebBrowser.
+| Folder | Fungsi |
+| --- | --- |
+| `../barberbarbar-customer` | React Native Expo existing untuk penilaian; tidak diubah |
+| `barberbarbar-customer-web` | Worktree Web, branch lokal `feat/project5-react-web-mobile-first` |
 
-- Registrasi/login CUSTOMER, profil, perubahan identitas/kata sandi dengan verifikasi kata sandi saat ini, serta formulir lupa/reset password.
-- Katalog layanan/barber aktif tanpa login; membership melalui persetujuan ADMIN.
-- Booking multiservice dengan jumlah, searchable dropdown barber, reschedule, pembatalan, dan persetujuan usulan barber.
-- Status DP/pelunasan, checkout Midtrans, refund, riwayat, serta invoice sendiri.
-- Realtime dan sinkronisasi ketika aplikasi kembali aktif.
-
-Navigasi utama: **Beranda, Booking, Riwayat, Akun**. Searchable dropdown dipakai pada booking baru dan reschedule. Desain navy, slate, indigo, dan latar terang tetap dipertahankan.
-
-```text
-App.tsx / index.ts       Entry aplikasi
-src/layar/              Layar customer
-src/komponen/           Komponen termasuk PilihanBerpencarian
-src/                    Navigasi, sesi, API, tipe, dan aturan antarmuka
-assets/                 Logo dan ikon
-scripts/                Test dropdown, detail, draft, dan integrasi
-docs/audit/             Bukti serta batas pengujian historis
-```
+Basis Web: `origin/main` commit `2f1e40645067d8ec09f8df2a7b8b172ba57779d0`. File `.git` Web mengarah ke repository existing, bukan repository baru. Branch Web tanpa upstream. **Hanya commit lokal; tidak ada push, PR atau merge.**
 
 ## Menjalankan lokal
 
-Siapkan Node.js/npm sesuai lockfile (baseline Node 24), backend Project 3, dan perangkat yang kompatibel dengan Expo SDK 57.
+Dependency Web telah dipasang terpisah dengan persetujuan pengguna. Dari folder Web:
 
 ```powershell
-npm.cmd ci
+npm.cmd run dev
 ```
 
-Salin `.env.example` menjadi `.env` dan isi `EXPO_PUBLIC_API_URL` dengan `http://<IP-LAN-KOMPUTER>:3000`. Gunakan IP backend saat ini; `localhost` pada HP menunjuk HP sendiri. Credential server/Midtrans tidak boleh masuk variabel publik atau bundle. File `.env` diabaikan Git.
+Buka **http://127.0.0.1:5175/**. Dev server mengikat loopback. Navigasi hash memungkinkan reload tanpa rewrite SPA.
 
-```powershell
-npm.cmd start -- --lan --port 8082
+`GET /api/public/services` diproxy Vite ke `http://127.0.0.1:3000/public/services`. Backend Project 3 dijalankan secara terpisah, tanpa perubahan source atau konfigurasi oleh pekerjaan ini. Jika backend tidak tersedia, klik **Gunakan layanan demo**; aplikasi tidak mengganti katalog secara diam-diam.
+
+Konfigurasi opsional pada `.env.local` Web saja:
+
+```dotenv
+VITE_API_BASE_URL=/api
 ```
 
-Gunakan LAN yang sama dengan komputer dan pindai QR memakai Expo Go yang mendukung SDK 57. Bila tidak kompatibel, gunakan development build sesuai SDK dan toolchain Android yang disiapkan terpisah. Restart Metro setelah perubahan environment.
+`VITE_*` bersifat publik dan masuk bundle browser. Jangan isi credential, Server Key Midtrans, JWT atau password database. `.env` original tidak disalin. Untuk hosting kelak, sediakan proxy `/api` atau origin API publik dengan CORS yang sesuai. Deployment belum termasuk lingkup.
 
-## Booking, membership, dan pembayaran
+## Halaman dan batas implementasi
 
-Customer dapat booking tanpa membership. Pengajuan customer memakai benefit 10% setelah ADMIN menyetujui; membership INACTIVE diaktifkan kembali melalui flow ADMIN existing. Backend menentukan harga, snapshot diskon, slot, status, dan nominal transaksi.
+- **Beranda:** logo existing, hero, layanan, harga, durasi dan navigasi booking.
+- **Buat booking:** nama, nomor HP Indonesia, beberapa layanan/jumlah, tanggal/jam WIB, estimasi biaya dan DP 50%. Tanpa login, registrasi atau pilihan barber.
+- **Ringkasan demo:** nomor booking **belum diterbitkan**, jadwal, countdown demo 15 menit dan tautan navigasi sesi. Tautan bukan token rahasia; tidak membuka data setelah reload atau di tab lain.
+- **Detail demo:** layanan, jadwal, DP belum terverifikasi, pelunasan dan invoice belum tersedia.
+- **Pembayaran demo:** Snap belum aktif. Skenario pending/callback sukses/gagal hanya mengubah pesan. Callback sukses tidak menandai DP sah atau booking CONFIRMED.
 
-Checkout dibuka melalui WebBrowser. Kembalinya browser tidak menetapkan PAID; aplikasi mengambil status dari backend setelah webhook terverifikasi. Pengujian provider memakai Sandbox; Production belum diaktifkan. Refund memerlukan ADMIN, dan PROCESSING belum berarti dana dikembalikan.
+PII hanya di memori tab, tidak ditulis ke localStorage, sessionStorage, cookie atau log. Nama/nomor HP tidak dikirim lewat request publik atau URL. Tombol hapus pratinjau dan reload membuang data demo.
 
-Jadwal ulang dapat mengubah layanan, jumlah, barber dan waktu; backend menentukan ulang durasi, harga dan kecukupan DP menggunakan diskon booking. Perubahan perlu konfirmasi ulang.
+## Struktur source
 
-Pengiriman email nyata masih nonaktif sampai provider disetujui/dikonfigurasi. Backend sudah memiliki template dan kontrak transport yang diuji mock; jangan menganggap email telah terkirim. Tautan pemulihan memakai `barberbarbar-customer://reset-password` dengan token pada fragment, membuka formulir tanpa menjalankan reset otomatis. Scheme baru memerlukan development/native build yang diregistrasikan; jangan menganggap Expo Go otomatis mendukungnya. Lihat [panduan Expo](https://docs.expo.dev/linking/into-your-app/).
+| File | Tanggung jawab |
+| --- | --- |
+| `src/App.tsx` | Navigasi hash, layout, katalog dan state demo |
+| `src/domain.ts` | Tipe domain, normalisasi HP, validasi WIB, estimasi |
+| `src/demo.ts` | Katalog contoh terisolasi |
+| `src/layanan/publik.ts` | Fetch GET-only dan validasi respons |
+| `src/layanan/kontrak.ts` | Rancangan guest/Snap; fungsi selalu menolak tanpa request |
+| `src/komponen/Katalog.tsx` | Loading/error/empty dan sumber katalog |
+| `src/komponen/FormBooking.tsx` | Form serta estimasi |
+| `src/komponen/Pratinjau.tsx` | Ringkasan, detail dan skenario pembayaran |
+| `src/komponen/Ikon.tsx` | SVG lokal |
+| `src/style.css` | Navy/slate/indigo dan layout responsif |
+| `src/main.tsx`, `index.html` | Entry React DOM |
+| `vite.config.ts`, `tsconfig.json` | Konfigurasi Web |
+| `playwright.config.ts`, `tests/customer-web.spec.ts` | E2E Chrome existing, API fixture |
 
-Perubahan email/telepon/kata sandi mencabut sesi lama dan meminta login kembali. Password/kode tidak disimpan ke storage atau log. Laporan umum pengguna bahwa mobile berhasil dicatat; acceptance per skenario dan checkout langsung Android tetap memerlukan bukti spesifik. Detail hasil terkini ada di [penutupan acceptance](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/FINAL-ACCEPTANCE-CLOSURE.md).
+Entry dan komponen Native hanya diganti pada branch Web. Source original tetap pada worktree React Native dan histori Git. Dokumen audit/instalasi/PR lama serta script backup lama adalah riwayat React Native, bukan panduan Web. Gunakan README ini dan [audit Web](docs/REACT-WEB-AUDIT.md).
 
-## Pengujian
+## Validasi
 
 ```powershell
 npm.cmd run typecheck
-npx.cmd expo install --check
-npm.cmd run build:android
+npm.cmd run build
 npm.cmd test
-node scripts/test-pemulihan-customer.mjs
+npm.cmd audit
 ```
 
-Suite menguji searchable dropdown, detail, draft reschedule, sesi, booking, pembayaran, membership, dan realtime melalui adapter lokal. Runner di backend menambah regresi HTTP/database dan browser Web. Ekspor Hermes berbeda dari acceptance UI Android. Output `dist`, `.expo`, cache, dan environment tidak dilacak Git.
+Playwright memakai Chrome existing (`channel: chrome`), tanpa mengunduh browser. Vite tes di `127.0.0.1:5185`, API diintersep fixture, tanpa transaksi backend. Screenshot lima halaman pada lebar 320, 375, 430, 768 dan 1440 px berada di `test-results/visual/` (diabaikan Git).
 
-## Repository terkait
+`npm.cmd run preview` melayani build di http://127.0.0.1:4175/. Preview build tidak menyediakan proxy development; gunakan layanan demo atau konfigurasi origin API publik sebelum build.
 
-- [Web Management + Backend](https://github.com/umarmaulanazakaria/barberbarbar)
-- [Mobile ADMIN/STAFF](https://github.com/umarmaulanazakaria/barberbarbar-mobile)
-- [Customer App](https://github.com/umarmaulanazakaria/barberbarbar-customer)
+## Integrasi berikutnya
 
-Advisory dependency, refund historis Rp2.000, email recovery, dan sejumlah keputusan PRD masih terbuka bersama pengujian perangkat. Periksa [audit dan batas rilis](docs/audit/F14-AUDIT.md) sebelum penerapan.
+`src/layanan/kontrak.ts` adalah rancangan, bukan endpoint yang tersedia. Setelah penilaian, backend perlu menetapkan guest booking, validasi jadwal/harga/jumlah, DP 50% dan deadline 15 menit, token pribadi aman, rate limit, idempotency, verifikasi webhook/provider dan auto confirmation. Barber ditentukan Staff saat operasional; tidak ada persetujuan admin pada rancangan guest.
 
-## Demonstrasi dan portofolio
-
-[Menjalankan ekosistem](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PANDUAN-JALANKAN-DEMO.md) | [Presentasi](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PANDUAN-PRESENTASI.md) | [Naskah](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/NASKAH-DEMO.md) | [Review Git/PR](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/PORTFOLIO-RELEASE-REVIEW.md).
-
-### Screenshot perangkat
-
-Belum ada screenshot native terverifikasi dalam repository. [Panduan capture](docs/screenshots/README.md) menentukan layar yang diperlukan. Tidak memakai screenshot Web atau gambar fiktif sebagai pengganti Android.
+Jangan mengaktifkan submit/Snap hanya dengan mengganti tampilan success. Nomor booking, tautan rahasia, tagihan, status dan invoice wajib berasal dari backend terverifikasi. Tes backend guest, expiry DP dan auto confirmation **belum dilaksanakan**.

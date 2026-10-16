@@ -1,11 +1,11 @@
 node_modules/
-.expo/
 dist/
-.git/
 .env
 .env.*
 !.env.example
 *.tsbuildinfo
 npm-debug.*
-/android
-/ios
+playwright-report/
+test-results/
+.expo/
+AGENTS.md
