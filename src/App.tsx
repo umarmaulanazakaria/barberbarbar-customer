@@ -10,6 +10,7 @@ import FormBooking from "./komponen/FormBooking";
 import BookingTamu from "./komponen/BookingTamu";
 import { buatGuest,imporLegacyGuest,kesiapanGuest } from "./layanan/guest";
 import LacakBooking from "./komponen/LacakBooking";
+import { buatKunciIdempotensi } from "./layanan/idempotensi";
 
 const legacy=/^#\/b\/([a-f0-9]{64})(?:\/(detail|pembayaran|invoice))?$/.exec(window.location.hash);
 if(legacy)window.history.replaceState(null,"",window.location.pathname+window.location.search+"#/kunjungan"+(legacy[2]?"/"+legacy[2]:""));
@@ -28,7 +29,7 @@ export default function App() {
     [error, aturError] = useState("");
   const [mengirim, aturMengirim] = useState(false),
     [errorBooking, aturErrorBooking] = useState("");
-  const idempotensi = useRef(crypto.randomUUID()),
+  const idempotensi = useRef<string | null>(null),
     kunciKirim = useRef(false);
   const utama = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -86,6 +87,7 @@ export default function App() {
     aturMengirim(true);
     aturErrorBooking("");
     try {
+      idempotensi.current ??= buatKunciIdempotensi();
       const hasil = await buatGuest({
         nama: d.nama,
         nomorTelepon: d.telepon,
@@ -100,7 +102,7 @@ export default function App() {
         throw new Error(
           "Respons booking belum dapat dibaca. Jangan membuat pembayaran ulang.",
         );
-      idempotensi.current = crypto.randomUUID();
+      idempotensi.current = null;
       window.location.hash = "/kunjungan";
     } catch (e) {
       aturErrorBooking(

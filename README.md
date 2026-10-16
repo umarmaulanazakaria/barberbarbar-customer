@@ -85,3 +85,7 @@ Suite ini membuka UI aplikasi aktual (bukan entry pratinjau), mengintersepsi sel
 Event hanya meminta pembacaan ulang, bukan bukti settlement. Bila WebSocket diblokir, REST polling tetap berjalan. Saat sesi dicabut, server memutus socket dan REST membersihkan detail/kode/invoice. Server dan proxy deployment harus mendukung upgrade WebSocket pada `/socket.io`; Vite proxy hanya untuk development.
 
 Tes lintas Customer/Admin: `node node_modules/@playwright/test/cli.js test --config playwright.realtime.config.ts`, dengan backend fixture `serve-guest-browser.mjs` di3185, Vite Customer5186 dan Vite Admin5188 (BB_E2E_BACKEND_PORT=3185). Jangan mengarahkan fixture ke database utama. Lihat [audit Socket.IO dan Midtrans](../barberbarbar/docs/INTEGRASI-SOCKET-MIDTRANS.md).
+
+## Browser HP melalui Wi-Fi
+
+Jalankan `npm.cmd run dev`, buka `http://IP-LAPTOP:5175` pada HP di Wi-Fi yang sama. Host Vite sekarang mengikuti config LAN, tanpa ADB Reverse. Backend tetap diproxy melalui `/api` dan `/socket.io`. Tidak perlu hardcode IP atau menyalin credential ke frontend. UUID memakai fallback getRandomValues pada HTTP LAN; salin tracking memiliki fallback pemilihan manual. [Perbaikan, pengujian dan batas HTTPS](docs/AKSES-HP-LAN.md).

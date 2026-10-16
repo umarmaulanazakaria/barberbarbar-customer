@@ -11,6 +11,8 @@ import {
 } from "../layanan/guest";
 import { muatSnap } from "../layanan/snap";
 import { langgananBookingTamu } from "../layanan/realtime";
+import { buatKunciIdempotensi } from "../layanan/idempotensi";
+import { salinAtauPilihKode } from "../layanan/salin";
 import { Ikon } from "./Ikon";
 import "../tracking.css";
 
@@ -154,7 +156,7 @@ export default function BookingTamu({
     try {
       const checkout = await checkoutGuest(
         data.booking.status === "COMPLETED" ? "PELUNASAN" : "DP",
-        crypto.randomUUID(),
+        buatKunciIdempotensi(),
       );
       if (checkout.isProduction !== false || !checkout.token)
         throw new Error("Checkout Sandbox belum tersedia.");
@@ -195,7 +197,7 @@ export default function BookingTamu({
     }
   };
   useEffect(()=>{if(!data?.ringkasan.dpTerverifikasi||kode)return;let aktif=true;const versi=versiAkses.current;void kodeTrackingGuest().then(r=>{if(aktif && versi===versiAkses.current)aturKode(r.kode)}).catch(()=>{if(aktif)aturPesan("Kode belum dapat dimuat. Perbarui status atau hubungi Admin.")});return()=>{aktif=false}},[data?.ringkasan.dpTerverifikasi,data?.booking.status,kode]);
-  const salin=async()=>{if(!kode)return;try{await navigator.clipboard.writeText(kode);aturPesan("Kode tracking disalin. Simpan dan jangan bagikan kepada orang lain.")}catch{aturPesan("Pilih kode di atas untuk menyalinnya secara manual.")}};
+  const salin=async()=>{if(!kode)return;try{const disalin=await salinAtauPilihKode(kode,document.querySelector<HTMLElement>('[data-testid="kode-tracking"]'));aturPesan(disalin?"Kode tracking disalin. Simpan dan jangan bagikan kepada orang lain.":"Kode tracking dipilih. Tekan lama kode lalu pilih Salin, atau gunakan Ctrl+C pada laptop.")}catch{aturPesan("Pilih kode di atas untuk menyalinnya secara manual.")}};
   if (!data)
     return (
       <section className="halaman-kosong panel">
@@ -339,7 +341,7 @@ export default function BookingTamu({
               </div>
             )) : <p>Belum ada transaksi pembayaran.</p>}
           </section>
-          {kode && <section className="panel"><h2>Kode Tracking Booking Anda</h2>{b.status==="CONFIRMED"&&<p>Booking Anda telah dikonfirmasi.</p>}<div className="kode-tracking" data-testid="kode-tracking">{kode}</div><p>Simpan kode ini untuk memantau booking Anda.</p><div className="tracking-aksi"><button className="tombol utama" onClick={()=>void salin()}>Salin Kode</button><a className="tombol sekunder" href="#/kunjungan/detail">Lihat Detail Booking</a></div></section>}
+          {kode && <section className="panel"><h2>Kode Tracking Booking Anda</h2>{b.status==="CONFIRMED"&&<p>Booking Anda telah dikonfirmasi.</p>}<div className="kode-tracking" data-testid="kode-tracking" tabIndex={0}>{kode}</div><p>Simpan kode ini untuk memantau booking Anda.</p><div className="tracking-aksi"><button className="tombol utama" onClick={()=>void salin()}>Salin Kode</button><a className="tombol sekunder" href="#/kunjungan/detail">Lihat Detail Booking</a></div></section>}
           <section className="panel"><h2>Proses booking</h2><ol className="tahapan-tracking">{[
             ["DP Terverifikasi",u.dpTerverifikasi],["Booking Dikonfirmasi",!!b.dikonfirmasiPada],["Check-in",!!b.checkInPada],["Sedang Dilayani",!!b.layananMulaiPada],["Layanan Selesai",!!b.layananSelesaiPada],["Pelunasan",u.statusPembayaran==="PAID"],["Selesai",final],
           ].map(([label,selesai])=><li key={String(label)} data-selesai={Boolean(selesai)}>{label}</li>)}</ol></section>
