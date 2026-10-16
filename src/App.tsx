@@ -151,7 +151,7 @@ export default function App() {
           </a>
         </div>
       </header>
-      <main id="konten" tabIndex={-1} ref={utama} className="wadah">
+      <main id="konten" tabIndex={-1} ref={utama} className={`wadah${diBeranda ? " beranda-customer" : ""}`}>
         {diBeranda ? (
           <>
             <section className="hero">
@@ -172,10 +172,10 @@ export default function App() {
                 </p>
                 <div className="aksi-hero">
                   <a className="tombol utama" href="#/booking">
-                    Booking sekarang <Ikon nama="panah" />
+                    Mulai Booking <Ikon nama="panah" />
                   </a>
-                  <a className="tombol sekunder" href="#/layanan">
-                    Lihat layanan
+                  <a className="tombol sekunder" href="#/lacak" aria-label="Lacak Booking Anda">
+                    Lacak Booking
                   </a>
                 </div>
                 <div className="nilai-hero">
@@ -337,7 +337,7 @@ export default function App() {
           <Ikon nama="layanan" />
           Layanan
         </a>
-        <a aria-current={!diBeranda ? "page" : undefined} href="#/booking">
+        <a aria-current={jalur === "/booking" || Boolean(pribadi) ? "page" : undefined} href="#/booking">
           <Ikon nama="kalender" />
           Booking
         </a>

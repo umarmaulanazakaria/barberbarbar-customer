@@ -91,8 +91,9 @@ export default function FormBooking({
           {pesan}
         </p>
       )}
-      <form noValidate onSubmit={kirim} ref={formulir} className="grid-form">
-        <div className="isi-form">
+      <form noValidate onSubmit={kirim} ref={formulir} className="grid-form" aria-busy={sibuk}>
+        <fieldset className="isi-form" disabled={sibuk}>
+          <legend className="sr-only">Data, layanan, dan jadwal booking</legend>
           <section className="panel">
             <div className="judul-panel">
               <span className="angka">01</span>
@@ -210,7 +211,7 @@ export default function FormBooking({
                       >
                         −
                       </button>
-                      <output aria-label={`Jumlah ${l.nama}`}>
+                      <output aria-label={`Jumlah ${l.nama}`} aria-live="polite">
                         {jumlah[l.id]}
                       </output>
                       <button
@@ -288,7 +289,7 @@ export default function FormBooking({
                 : "Ketersediaan jadwal belum diverifikasi. Ini belum memesan slot layanan."}
             </p>
           </section>
-        </div>
+        </fieldset>
         <aside className="panel ringkasan" aria-labelledby="judul-ringkasan">
           <span className="eyebrow">RENCANA KUNJUNGAN</span>
           <h2 id="judul-ringkasan">Ringkasan pilihan</h2>

@@ -1,0 +1,83 @@
+/* Presentational layer: leave historical stylesheet and API workflows intact. */
+.beranda-customer, .halaman-form, .header { --aksi-utama: #575bd8; }
+.beranda-customer .utama, .halaman-form .utama, .header .utama { background: var(--aksi-utama); }
+.beranda-customer .utama:hover:not(:disabled), .halaman-form .utama:hover:not(:disabled), .header .utama:hover { background: #6266e3; }
+.halaman-form {
+  --ruang-panel: 20px;
+  --target-sentuh: 44px;
+  padding-bottom: 24px;
+}
+.halaman-form .panel { padding: var(--ruang-panel); }
+.halaman-form .judul-panel { margin-bottom: 20px; }
+.halaman-form .judul-panel p,
+.halaman-form .bantuan,
+.halaman-form .catatan,
+.halaman-form .catatan-privasi { font-size: 13px; line-height: 1.65; }
+.halaman-form .kolom label { font-size: 14px; font-weight: 600; }
+.halaman-form input:not([type="checkbox"]) {
+  font-size: 16px;
+  min-height: 48px;
+  scroll-margin-block: 24px 110px;
+}
+.halaman-form .error-kolom { font-size: 13px; }
+.halaman-form .label-pilihan { min-height: var(--target-sentuh); }
+.halaman-form .label-pilihan strong { font-size: 15px; }
+.halaman-form .label-pilihan small { font-size: 13px; line-height: 1.5; }
+.halaman-form .pilihan:focus-within { border-color: var(--indigo); }
+.halaman-form .pengatur-jumlah button {
+  min-width: var(--target-sentuh);
+  height: var(--target-sentuh);
+}
+.halaman-form .pengatur-jumlah output { min-width: 44px; font-size: 15px; }
+.halaman-form .kembali { min-height: var(--target-sentuh); font-size: 13px; }
+.halaman-form .ringkasan > .tombol { min-height: 52px; }
+.halaman-form .ringkasan .bantuan { margin-bottom: 20px; }
+.halaman-form .langkah { font-size: 12px; }
+.halaman-form fieldset:disabled .pilihan { opacity: .65; }
+
+@media (max-width: 767px) {
+  .header-dalam { min-height: 76px; }
+  .header .logo { width: min(170px, 43vw); min-height: 44px; display: flex; align-items: center; }
+  .header .tombol-header { min-height: 44px; font-size: 12px; padding-inline: 12px; }
+  .nav-mobile a { min-height: 44px; min-width: 0; flex: 1; font-size: 11px; }
+  .beranda-customer .hero { padding-block: 28px 24px; gap: 0; }
+  .beranda-customer .teks-hero h1 {
+    font-size: clamp(34px, 9vw, 44px);
+    margin-block: 16px;
+    line-height: 1.12;
+  }
+  .beranda-customer .teks-hero > p { font-size: 15px; line-height: 1.7; }
+  .beranda-customer .aksi-hero { display: grid; grid-template-columns: 1fr 1fr; margin-top: 22px; }
+  .beranda-customer .aksi-hero .tombol { min-height: 48px; padding-inline: 10px; font-size: 13px; }
+  .beranda-customer .nilai-hero { margin-top: 18px; gap: 14px; font-size: 12px; }
+  .beranda-customer .visual-hero { display: none; }
+  .beranda-customer .strip-proses { gap: 12px; padding: 18px; }
+  .beranda-customer .strip-proses p { font-size: 13px; }
+  .beranda-customer .strip-proses small { font-size: 12px; }
+  .beranda-customer .bagian { padding-top: 32px; }
+  .beranda-customer .kepala-bagian h2 { font-size: 27px; }
+  .beranda-customer .kepala-bagian > p { font-size: 14px; }
+  .beranda-customer .status-katalog:empty { margin-block: 16px 0; }
+  .beranda-customer .grid-layanan { grid-template-columns: 1fr; gap: 12px; }
+  .beranda-customer .kartu-layanan { padding: 18px; position: relative; }
+  .beranda-customer .atas-layanan { display: none; }
+  .beranda-customer .kartu-layanan h3 { font-size: 17px; padding-right: 44px; }
+  .beranda-customer .durasi { font-size: 13px; margin-top: 6px; }
+  .beranda-customer .bawah-layanan { margin-top: 12px; padding-top: 12px; }
+  .beranda-customer .tombol-ikon { width: 44px; height: 44px; }
+  .halaman-form { --ruang-panel: 18px; padding-top: 16px; }
+  .halaman-form .judul-halaman { margin-block: 16px 20px; }
+  .halaman-form .judul-halaman h1 { font-size: 30px; }
+  .halaman-form .judul-halaman > p { font-size: 14px; }
+  .halaman-form .langkah { padding-bottom: 20px; margin-bottom: 20px; gap: 4px; }
+  .halaman-form .langkah li { gap: 4px; }
+  .halaman-form .pilihan { padding: 12px; }
+  .halaman-form .label-pilihan strong { overflow-wrap: anywhere; }
+  .halaman-form .grid-dua { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) and (hover: none) {
+  body:has(.halaman-form input:not([type="checkbox"]):focus) .nav-mobile { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .beranda-customer *, .halaman-form * { scroll-behavior: auto; transition: none; }
+}

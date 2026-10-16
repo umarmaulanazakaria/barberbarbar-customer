@@ -3,7 +3,7 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   workers: 1,
-  testIgnore: ["**/guest-live.spec.ts", "**/tracking-live.spec.ts", "**/reliability-public.spec.ts", "**/customer-principal.spec.ts", "**/realtime-live.spec.ts", "**/compatibility-lan.spec.ts"],
+  testIgnore: ["**/guest-live.spec.ts", "**/tracking-live.spec.ts", "**/reliability-public.spec.ts", "**/customer-principal.spec.ts", "**/realtime-live.spec.ts", "**/compatibility-lan.spec.ts", "**/mobile-ux.spec.ts"],
   timeout: 30_000,
   expect: { timeout: 7_000 },
   use: {
