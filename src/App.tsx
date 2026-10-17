@@ -89,6 +89,7 @@ export default function App() {
     try {
       idempotensi.current ??= buatKunciIdempotensi();
       const hasil = await buatGuest({
+        ...(d.nomorMember?{nomorMember:d.nomorMember}:{}),
         nama: d.nama,
         nomorTelepon: d.telepon,
         mulaiPada: `${d.tanggal}T${d.jam}:00+07:00`,

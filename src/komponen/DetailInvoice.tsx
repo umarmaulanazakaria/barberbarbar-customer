@@ -16,7 +16,7 @@ export default function DetailInvoice({ data, halaman, invoiceDisahkan, error, p
   const b=data.booking, u=data.ringkasan;
   const final=b.status==="COMPLETED" && u.statusPembayaran==="PAID" && u.balance===0 && !u.invoiceSementara && !!u.invoice;
   const invoice=halaman==="invoice" && final && invoiceDisahkan ? u.invoice : null;
-  const bolehBayar=(b.status==="AWAITING_DP" && sekarang<Date.parse(b.deadlineDp) && !u.dpTerverifikasi) || (b.status==="COMPLETED" && u.dpTerverifikasi && u.balance>0);
+  const bolehBayar=(b.status==="AWAITING_DP" && sekarang<Date.parse(b.deadlineDp??"") && !u.dpTerverifikasi) || (b.status==="COMPLETED" && (u.dpTerverifikasi||u.syaratDpTerpenuhi) && u.balance>0);
   const kejadian=[
     {nama:"Booking dikonfirmasi",waktu:b.dikonfirmasiPada},
     {nama:"Check-in",waktu:b.checkInPada},

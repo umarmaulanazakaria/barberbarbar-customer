@@ -1,6 +1,7 @@
 export type Layanan = { id: number; nama: string; harga: number; durasiMenit: number };
 export type PilihanLayanan = { layanan: Layanan; jumlah: number };
-export type DrafBooking = { nama: string; telepon: string; tanggal: string; jam: string; pilihan: PilihanLayanan[] };
+export type DrafBooking = {
+  nomorMember?: string; nama: string; telepon: string; tanggal: string; jam: string; pilihan: PilihanLayanan[] };
 export type KesalahanForm = Partial<Record<keyof DrafBooking, string>>;
 export type PratinjauBooking = DrafBooking & { batasDemo: number; sumber: 'publik' | 'demo' };
 

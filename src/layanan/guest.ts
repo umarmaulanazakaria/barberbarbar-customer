@@ -1,4 +1,5 @@
 export type RingkasanTamu = {
+  bebasDp?: boolean; syaratDpTerpenuhi?: boolean;
   subtotal: number;
   total: number;
   nominalDpAwal: number;
@@ -19,7 +20,7 @@ export type DetailTamu = {
     selesaiPada: string;
     durasiMenit: number;
     dibuatPada: string;
-    deadlineDp: string;
+    deadlineDp: string | null;
     deadlinePelunasan: string | null;
     barber: string | null;
     dikonfirmasiPada: string | null;
@@ -110,7 +111,8 @@ async function permintaan<T>(
   return hasil.json() as Promise<T>;
 }
 export class KesalahanGuest extends Error { constructor(public status:number,pesan:string){super(pesan)} }
-export const buatGuest = (data: {nama:string;nomorTelepon:string;mulaiPada:string;items:{layananId:number;qty:number}[];kunciIdempotensi:string}) => permintaan<BookingTerbit>("","POST",data);
+export const buatGuest = (data: {
+  nomorMember?: string;nama:string;nomorTelepon:string;mulaiPada:string;items:{layananId:number;qty:number}[];kunciIdempotensi:string}) => permintaan<BookingTerbit>("","POST",data);
 export const detailGuest = async(token?:string) => {if(token)await imporLegacyGuest(token);return permintaan<DetailTamu>("/current","GET")};
 export const sinkronGuest = () => permintaan<DetailTamu>("/sync","POST",{});
 export function checkoutGuest(tujuan:"DP"|"PELUNASAN",kunciIdempotensi:string):Promise<CheckoutTamu>;

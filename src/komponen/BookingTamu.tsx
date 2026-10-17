@@ -19,6 +19,7 @@ import DetailInvoice from "./DetailInvoice";
 import RingkasanPembayaran, { bookingDikonfirmasi } from "./RingkasanPembayaran";
 
 const labelStatus: Record<string, string> = {
+  MEMBER_CONFIRMED: "Bebas DP Membership", NO_PAYMENT_DUE: "Tanpa tagihan",
   AWAITING_DP: "Menunggu pembayaran DP",
   CONFIRMED: "Booking dikonfirmasi",
   CHECKED_IN: "Sudah check-in",
@@ -238,11 +239,11 @@ export default function BookingTamu({
     );
   const b = data.booking,
     u = data.ringkasan,
-    batas = Date.parse(b.deadlineDp),
+    batas = Date.parse(b.deadlineDp??""),
     habis = sekarang >= batas;
   const dapatDp = b.status === "AWAITING_DP" && !habis && !u.dpTerverifikasi;
   const dapatLunas =
-    b.status === "COMPLETED" && u.dpTerverifikasi && u.balance > 0;
+    b.status === "COMPLETED" && (u.dpTerverifikasi || u.syaratDpTerpenuhi) && u.balance > 0;
   const final =
     b.status === "COMPLETED" && u.statusPembayaran === "PAID" && !!u.invoice;
 
@@ -341,7 +342,7 @@ export default function BookingTamu({
               <div>
                 <dt>Status DP</dt>
                 <dd data-testid="dp-sah">
-                  {u.dpTerverifikasi ? "Terverifikasi" : "Belum terverifikasi"}
+                  {u.bebasDp ? "Bebas DP Membership" : u.dpTerverifikasi ? "Terverifikasi" : "Belum terverifikasi"}
                 </dd>
               </div>
             </dl>
@@ -473,7 +474,7 @@ export default function BookingTamu({
                 <p>
                   {habis
                     ? "Batas pembayaran terlewati. Perbarui status; jangan lanjutkan checkout."
-                    : tanggal(b.deadlineDp)}
+                    : b.deadlineDp ? tanggal(b.deadlineDp) : "Bebas DP Membership"}
                 </p>
               </div>
             )}

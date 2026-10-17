@@ -1,3 +1,4 @@
+import { kutipanMembership } from "../layanan/membership";
 import { useRef, useState, type FormEvent } from "react";
 import {
   estimasi,
@@ -28,6 +29,7 @@ export default function FormBooking({
   sibuk?: boolean;
   pesan?: string;
 }) {
+  const [nomorMember, aturMember] = useState(awal?.nomorMember??"");
   const [nama, aturNama] = useState(awal?.nama ?? ""),
     [telepon, aturTelepon] = useState(awal?.telepon ?? "");
   const [tanggal, aturTanggal] = useState(awal?.tanggal ?? ""),
@@ -43,10 +45,15 @@ export default function FormBooking({
   const pilihan = sumber.layanan
     .filter((l) => (jumlah[l.id] ?? 0) > 0)
     .map((layanan) => ({ layanan, jumlah: jumlah[layanan.id] }));
-  const ringkas = estimasi(pilihan);
+  const [kutipan, aturKutipan] = useState<{sidik:string;total:number}|null>(null), [memeriksaMember, aturMemeriksa] = useState(false), [galatMember, aturGalatMember] = useState("");
+  const sidikMember = JSON.stringify({nomorMember:nomorMember.trim().toUpperCase(),mulaiPada: tanggal && jam ? tanggal+"T"+jam+":00+07:00" : "",items:pilihan.map(p=>({layananId:p.layanan.id,qty:p.jumlah}))});
+  const memberSah = !!nomorMember.trim() && kutipan?.sidik===sidikMember;
+  const reguler = estimasi(pilihan), ringkas = memberSah ? {...reguler,total:kutipan!.total,dp:0}:reguler;
+  const periksaMember = async()=>{aturMemeriksa(true);aturGalatMember("");try{const body=JSON.parse(sidikMember) as {nomorMember:string;mulaiPada:string;items:{layananId:number;qty:number}[]};const hasil=await kutipanMembership(body);aturKutipan({sidik:sidikMember,total:hasil.total})}catch(e){aturKutipan(null);aturGalatMember(e instanceof Error?e.message:"Membership belum dapat diperiksa.")}finally{aturMemeriksa(false)}};
   const kirim = (e: FormEvent) => {
     e.preventDefault();
     const draf = {
+      ...(nomorMember.trim()?{nomorMember:nomorMember.trim().toUpperCase()}:{}),
       nama: nama.trim(),
       telepon: normalisasiTelepon(telepon),
       tanggal,
@@ -54,6 +61,7 @@ export default function FormBooking({
       pilihan,
     };
     const error = validasiDraf(draf);
+    if(nomorMember.trim()&&!memberSah)error.nomorMember="Periksa Nomor Member setelah memilih layanan dan jadwal.";
     aturSalah(error);
     if (Object.keys(error).length) {
       requestAnimationFrame(() =>
@@ -158,6 +166,7 @@ export default function FormBooking({
               </div>
             </div>
           </section>
+          <section className="panel"><label htmlFor="nomor-member">Nomor Member (opsional)</label><input id="nomor-member" maxLength={60} autoComplete="off" value={nomorMember} onChange={e=>aturMember(e.target.value.toUpperCase())}/><p className="bantuan">Manfaat dan masa aktif diverifikasi otomatis pada jadwal pelayanan. Member aktif bebas DP; identitas diperiksa saat check-in. Tekan Periksa Membership setelah memilih layanan dan jadwal.</p><button type="button" className="tombol sekunder" disabled={sibuk||memeriksaMember||!nomorMember.trim()||!tanggal||!jam||!pilihan.length} onClick={()=>void periksaMember()}>{memeriksaMember?"Memeriksa...":"Periksa Membership"}</button>{memberSah&&<p role="status">Membership berlaku pada jadwal pilihan. Tagihan {rupiah(kutipan!.total)}, bebas DP.</p>}{(galatMember||salah.nomorMember)&&<p className="error-kolom" role="alert">{galatMember||salah.nomorMember}</p>}</section>
           <section className="panel">
             <div className="judul-panel">
               <span className="angka">02</span>
@@ -322,7 +331,7 @@ export default function FormBooking({
               <dd data-testid="estimasi-total">{rupiah(ringkas.total)}</dd>
             </div>
             <div className="dp">
-              <dt>Estimasi DP 50%</dt>
+              <dt>{memberSah?"Bebas DP Membership":"Estimasi DP 50%"}</dt>
               <dd data-testid="estimasi-dp">{rupiah(ringkas.dp)}</dd>
             </div>
           </dl>
@@ -330,18 +339,18 @@ export default function FormBooking({
             Estimasi mengikuti layanan yang dipilih. Periksa tagihan final dan
             nominal DP setelah booking dibuat.
           </p>
-          <button className="tombol utama lebar" type="submit" disabled={sibuk}>
+          <button className="tombol utama lebar" type="submit" disabled={sibuk||memeriksaMember||!!nomorMember.trim()&&!memberSah}>
             {sibuk
               ? "Membuat booking…"
               : nyata
-                ? "Buat booking dan lanjut ke DP"
+                ? memberSah?"Buat Booking Member":"Buat booking dan lanjut ke DP"
                 : "Lihat pratinjau booking"}{" "}
             <Ikon nama="panah" />
           </button>
           <p className="catatan-privasi">
             <Ikon nama="perisai" ukuran={16} />{" "}
             {nyata
-              ? "Selesaikan DP dalam 15 menit untuk mengonfirmasi booking. Kode tracking tersedia setelah DP terverifikasi."
+              ? memberSah?"Booking Member langsung dikonfirmasi. Tunjukkan nama dan nomor HP member saat check-in.":"Selesaikan DP dalam 15 menit untuk mengonfirmasi booking. Kode tracking tersedia setelah DP terverifikasi."
               : "Tidak mengirim nama atau nomor HP ke server. Tidak membuat booking atau pembayaran."}
           </p>
         </aside>

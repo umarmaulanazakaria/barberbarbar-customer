@@ -5,7 +5,8 @@ import { Ikon } from "./Ikon";
 import "../pembayaran-ux.css";
 
 export function bookingDikonfirmasi(data: DetailTamu | null) {
-  return Boolean(data?.ringkasan.dpTerverifikasi && (data.booking.dikonfirmasiPada || ["CONFIRMED", "CHECKED_IN", "IN_SERVICE", "COMPLETED"].includes(data.booking.status)));
+  if(!data)return false;
+  return Boolean((data.ringkasan.dpTerverifikasi || data.ringkasan.bebasDp) && (data.booking.dikonfirmasiPada || ["CONFIRMED", "CHECKED_IN", "IN_SERVICE", "COMPLETED"].includes(data.booking.status)));
 }
 const waktu = (iso: string) => new Intl.DateTimeFormat("id-ID", {
   timeZone: "Asia/Jakarta", dateStyle: "long", timeStyle: "short",
@@ -18,7 +19,7 @@ export default function RingkasanPembayaran({ data, halaman, sekarang, sibuk, er
   perbarui: (sinkron?: boolean) => Promise<unknown>; salin: () => Promise<void>;
 }) {
   const b = data.booking, u = data.ringkasan;
-  const batas = Date.parse(b.deadlineDp), valid = Number.isFinite(batas);
+  const batas = Date.parse(b.deadlineDp??""), valid = Number.isFinite(batas);
   const habis = valid && sekarang >= batas, hampir = valid && !habis && batas - sekarang <= 120000;
   const terkonfirmasi = bookingDikonfirmasi(data);
   const terminal = ["CANCELLED", "REJECTED", "NO_SHOW"].includes(b.status);
@@ -26,7 +27,7 @@ export default function RingkasanPembayaran({ data, halaman, sekarang, sibuk, er
   const tinjauan = u.statusPembayaran === "REFUND_REVIEW" || (terminal && u.jumlahDibayar > 0 && !hangus);
   const transaksi = [...u.transaksi].reverse().find(t => t.tujuan === (b.status === "COMPLETED" ? "PELUNASAN" : "DP"));
   const dapatDp = b.status === "AWAITING_DP" && valid && !habis && !u.dpTerverifikasi;
-  const dapatLunas = b.status === "COMPLETED" && u.dpTerverifikasi && u.balance > 0 && !tinjauan;
+  const dapatLunas = b.status === "COMPLETED" && (u.dpTerverifikasi || u.syaratDpTerpenuhi) && u.balance > 0 && !tinjauan;
   const final = b.status === "COMPLETED" && u.statusPembayaran === "PAID" && !!u.invoice;
   const sudahSinkron = useRef("");
   useEffect(() => {
@@ -41,7 +42,8 @@ export default function RingkasanPembayaran({ data, halaman, sekarang, sibuk, er
   if (tinjauan) { judul = "Pembayaran membutuhkan penanganan"; penjelasan = "Status pembayaran sedang ditinjau. Hubungi Admin untuk memeriksa tindak lanjut pembayaran sebelum mencoba membayar lagi."; nada = "peringatan"; }
   else if (hangus) { judul = "DP mengikuti ketentuan booking"; penjelasan = "DP tercatat hangus sesuai ketentuan booking. Hubungi Admin jika memerlukan penjelasan."; nada = "peringatan"; }
   else if (terminal) { judul = labelStatus[b.status] ?? "Booking tidak aktif"; penjelasan = "Booking ini tidak dapat dilanjutkan ke pembayaran. Periksa status atau hubungi Admin."; nada = "peringatan"; }
-  else if (final) { judul = "Pembayaran lunas"; penjelasan = "Seluruh tagihan sudah dibayar. Invoice final sudah tersedia."; nada = "berhasil"; }
+  else if (final) { judul = u.bebasDp && u.total===0 ? "Pelayanan Membership selesai" : "Pembayaran lunas"; penjelasan = u.bebasDp && u.total===0 ? "Layanan gratis tercatat sebagai penggunaan Membership. Invoice Rp0 tersedia tanpa transaksi pembayaran." : "Seluruh tagihan sudah dibayar. Invoice final sudah tersedia."; nada = "berhasil"; }
+  else if(u.bebasDp && terkonfirmasi){judul=b.status==="COMPLETED"?"Layanan selesai":"Booking Member dikonfirmasi";penjelasan=dapatLunas?"Lunasi layanan tambahan untuk memperoleh invoice final.":"Membership bebas DP. Simpan kode tracking dan tunjukkan identitas member saat check-in.";nada="berhasil";}
   else if (terkonfirmasi) { judul = b.status === "COMPLETED" ? "Layanan selesai" : "Pembayaran DP berhasil"; penjelasan = dapatLunas ? "Lunasi sisa tagihan booking Anda untuk mendapatkan invoice final." : "DP sudah terverifikasi. Simpan kode tracking dan lihat detail booking Anda."; nada = "berhasil"; }
   else if (b.status === "AWAITING_DP" && (!valid || habis)) { judul = "Memeriksa batas pembayaran"; penjelasan = "Batas waktu berakhir atau belum dapat dipastikan. Pembayaran belum dapat dilanjutkan. Periksa status booking Anda."; nada = "peringatan"; }
   else if (transaksi?.status === "FAILED") { judul = "Pembayaran gagal"; penjelasan = "Transaksi sebelumnya gagal. Periksa status sebelum mencoba lagi selama booking masih mengizinkan pembayaran."; nada = "peringatan"; }
@@ -68,19 +70,19 @@ export default function RingkasanPembayaran({ data, halaman, sekarang, sibuk, er
         <h2><Ikon nama="kalender" ukuran={21}/> Kunjungan Anda</h2>
         <p className="jadwal-ux">{waktu(b.mulaiPada)}</p>
         <p className="teks-sekunder">{b.durasiMenit} menit · {b.aksesTamu.nama}</p>
-        <dl className="detail-kunjungan-ux"><div><dt>Nomor HP</dt><dd>{b.aksesTamu.nomorTelepon}</dd></div><div><dt>Status DP</dt><dd data-testid="dp-sah">{u.dpTerverifikasi ? "Terverifikasi" : "Belum terverifikasi"}</dd></div></dl>
+        <dl className="detail-kunjungan-ux"><div><dt>Nomor HP</dt><dd>{b.aksesTamu.nomorTelepon}</dd></div><div><dt>Status DP</dt><dd data-testid="dp-sah">{u.bebasDp ? "Bebas DP (Membership)" : u.dpTerverifikasi ? "Terverifikasi" : "Belum terverifikasi"}</dd></div></dl>
         <h3>Layanan pilihan</h3>
         <ul className="layanan-pembayaran">{b.items.map(i => <li key={i.layananId}><div><strong>{i.namaLayanan}</strong><small>{i.qty} × {rupiah(i.harga)}</small></div><strong>{rupiah(i.subtotal)}</strong></li>)}</ul>
       </section>
       <section className="panel biaya-ux" aria-labelledby="judul-biaya">
         <span className="eyebrow">TAGIHAN DARI BOOKING ANDA</span>
-        <h2 id="judul-biaya">{dapatLunas ? "Sisa pelunasan" : u.dpTerverifikasi ? "DP terverifikasi" : "DP 50%"}</h2>
+        <h2 id="judul-biaya">{dapatLunas ? "Sisa pelunasan" : u.bebasDp ? "Bebas DP Membership" : u.dpTerverifikasi ? "DP terverifikasi" : "DP 50%"}</h2>
         <p className="nominal-utama-ux" data-testid="nominal-utama">{rupiah(dapatLunas ? u.balance : u.nominalDpAwal)}</p>
         <dl className="rincian-biaya-ux"><div><dt>Total layanan</dt><dd>{rupiah(u.total)}</dd></div><div><dt>Sudah dibayar</dt><dd>{rupiah(u.jumlahDibayar)}</dd></div><div><dt>Sisa tagihan</dt><dd data-testid="balance">{rupiah(u.balance)}</dd></div></dl>
-        {!u.dpTerverifikasi && <p className="teks-sekunder">Sisa tagihan berkurang setelah pembayaran terverifikasi.</p>}
+        {!u.bebasDp && !u.dpTerverifikasi && <p className="teks-sekunder">Sisa tagihan berkurang setelah pembayaran terverifikasi.</p>}
         {b.status === "AWAITING_DP" && <div className={`batas-dp-ux ${habis || hampir ? "peringatan" : ""}`}>
           <div><span>Sisa waktu pembayaran DP</span><strong role="timer" aria-live="off" data-testid="countdown-aktual">{valid ? hitungMundur(batas, sekarang) : "--:--"}</strong></div>
-          <p>{habis ? "Batas waktu terlewati. Memeriksa status resmi booking." : valid ? `Bayar sebelum ${waktu(b.deadlineDp)}.` : "Perbarui status untuk memeriksa batas waktu."}</p>
+          <p>{habis ? "Batas waktu terlewati. Memeriksa status resmi booking." : valid ? `Bayar sebelum ${waktu(b.deadlineDp??"")}.` : "Perbarui status untuk memeriksa batas waktu."}</p>
           {hampir && <p role="status">Kurang dari 2 menit. Selesaikan pembayaran sebelum batas waktu.</p>}
         </div>}
         {b.deadlinePelunasan && dapatLunas && <p className="teks-sekunder">Batas pelunasan: {waktu(b.deadlinePelunasan)}</p>}
