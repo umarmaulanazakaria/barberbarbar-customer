@@ -112,7 +112,7 @@ async function permintaan<T>(
 }
 export class KesalahanGuest extends Error { constructor(public status:number,pesan:string){super(pesan)} }
 export const buatGuest = (data: {
-  nomorMember?: string;nama:string;nomorTelepon:string;mulaiPada:string;items:{layananId:number;qty:number}[];kunciIdempotensi:string}) => permintaan<BookingTerbit>("","POST",data);
+  nomorMember?: string;nama?:string;nomorTelepon?:string;barberPilihanId?:number;totalDiharapkan?:number;mulaiPada:string;items:{layananId:number;qty:number}[];kunciIdempotensi:string}) => permintaan<BookingTerbit>("","POST",data);
 export const detailGuest = async(token?:string) => {if(token)await imporLegacyGuest(token);return permintaan<DetailTamu>("/current","GET")};
 export const sinkronGuest = () => permintaan<DetailTamu>("/sync","POST",{});
 export function checkoutGuest(tujuan:"DP"|"PELUNASAN",kunciIdempotensi:string):Promise<CheckoutTamu>;

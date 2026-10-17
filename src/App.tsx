@@ -11,6 +11,8 @@ import BookingTamu from "./komponen/BookingTamu";
 import { buatGuest,imporLegacyGuest,kesiapanGuest } from "./layanan/guest";
 import LacakBooking from "./komponen/LacakBooking";
 import { buatKunciIdempotensi } from "./layanan/idempotensi";
+import "./customer-final.css";
+const bacaKunciBuat=()=>{try{const k=sessionStorage.getItem("bb-booking-create-pending");return k&&/^[a-f0-9-]{36}$/.test(k)?k:null}catch{return null}};
 
 const legacy=/^#\/b\/([a-f0-9]{64})(?:\/(detail|pembayaran|invoice))?$/.exec(window.location.hash);
 if(legacy)window.history.replaceState(null,"",window.location.pathname+window.location.search+"#/kunjungan"+(legacy[2]?"/"+legacy[2]:""));
@@ -29,7 +31,8 @@ export default function App() {
     [error, aturError] = useState("");
   const [mengirim, aturMengirim] = useState(false),
     [errorBooking, aturErrorBooking] = useState("");
-  const idempotensi = useRef<string | null>(null),
+  const [nomorAwal,aturNomorAwal]=useState("");
+  const idempotensi = useRef<string | null>(bacaKunciBuat()),
     kunciKirim = useRef(false);
   const utama = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -88,10 +91,10 @@ export default function App() {
     aturErrorBooking("");
     try {
       idempotensi.current ??= buatKunciIdempotensi();
+      try{sessionStorage.setItem("bb-booking-create-pending",idempotensi.current)}catch{/* kunci tetap dipertahankan dalam tab */}
       const hasil = await buatGuest({
-        ...(d.nomorMember?{nomorMember:d.nomorMember}:{}),
-        nama: d.nama,
-        nomorTelepon: d.telepon,
+        ...(d.nomorMember?{nomorMember:d.nomorMember}:{nama:d.nama,nomorTelepon:d.telepon}),
+        barberPilihanId:d.barberPilihanId, totalDiharapkan:d.totalDiharapkan,
         mulaiPada: `${d.tanggal}T${d.jam}:00+07:00`,
         items: d.pilihan.map((p) => ({
           layananId: p.layanan.id,
@@ -104,6 +107,7 @@ export default function App() {
           "Respons booking belum dapat dibaca. Jangan membuat pembayaran ulang.",
         );
       idempotensi.current = null;
+      try{sessionStorage.removeItem("bb-booking-create-pending")}catch{/* sesi dibatasi browser */}
       window.location.hash = "/kunjungan";
     } catch (e) {
       aturErrorBooking(
@@ -117,7 +121,7 @@ export default function App() {
   const permintaanLayanan =
     Number(new URLSearchParams(rute.split("?")[1]).get("layanan")) || null;
   const pribadi = /^\/kunjungan(?:\/(detail|pembayaran|invoice))?$/.exec(jalur);
-  const nyata = true;
+
   return (
     <>
       <a
@@ -145,7 +149,7 @@ export default function App() {
             >
               Layanan
             </a>
-            <a href="#/lacak" aria-current={jalur==="/lacak"?"page":undefined}>Lacak Booking</a>
+            <a href="#/lacak" aria-current={jalur==="/lacak"?"page":undefined}>Cek Status</a>
           </nav>
           <a href="#/booking" className="tombol utama tombol-header">
             Booking sekarang <Ikon nama="panah" ukuran={17} />
@@ -219,7 +223,7 @@ export default function App() {
                       <Ikon nama="kalender" /> Waktu yang kamu rencanakan
                     </span>
                     <span>
-                      <Ikon nama="kartu" /> DP 50%
+                      <Ikon nama="kartu" /> DP 50% Reguler
                     </span>
                   </div>
                   <span className="catatan-hero">
@@ -246,16 +250,17 @@ export default function App() {
               <div>
                 <span>02</span>
                 <p>
-                  Atur jadwal<small>Tanggal & jam dalam WIB</small>
+                  Barber & jadwal<small>Slot 45 menit dalam WIB</small>
                 </p>
               </div>
               <div>
                 <span>03</span>
                 <p>
-                  DP & siap datang<small>Konfirmasi setelah DP sah</small>
+                  Konfirmasi kunjungan<small>Reguler dengan DP, Member tanpa DP</small>
                 </p>
               </div>
             </div>
+            <section className="cw-home-member"><div><span className="eyebrow">KEUNTUNGAN MEMBER</span><h2>Sudah punya Nomor Member?</h2><p>Booking cukup Nomor Member. Manfaat sesuai paket aktif dan diverifikasi saat kunjungan.</p></div><form onSubmit={e=>{e.preventDefault();window.location.hash="/booking"}}><label htmlFor="nomor-member-awal">Nomor Member</label><input id="nomor-member-awal" required value={nomorAwal} maxLength={60} autoComplete="off" onChange={e=>aturNomorAwal(e.target.value)} placeholder="Masukkan Nomor Member Anda"/><button className="tombol utama" type="submit">Booking sebagai Member <Ikon nama="panah"/></button></form></section>
             <Katalog sumber={sumber} />
             <section className="cta-bawah">
               <div>
@@ -266,13 +271,11 @@ export default function App() {
                   dari satu rencana.
                 </h2>
                 <p>
-                  {nyata
-                    ? "Buat booking tanpa akun, bayar DP 50%, lalu simpan kode tracking Anda."
-                    : "Jelajahi alur booking tanpa membuat pesanan sungguhan."}
+                  Pilih layanan, barber, dan slot. Reguler membayar DP 50%; Member mengikuti manfaat paket aktif.
                 </p>
               </div>
               <a className="tombol utama" href="#/booking">
-                {nyata ? "Mulai booking" : "Coba pratinjau booking"}{" "}
+                Mulai booking{" "}
                 <Ikon nama="panah" />
               </a>
             </section>
@@ -294,7 +297,7 @@ export default function App() {
             awal={null}
             layananAwal={permintaanLayanan}
             lanjut={(d) => void lanjut(d)}
-            nyata={nyata}
+            nomorAwal={nomorAwal}
             sibuk={mengirim}
             pesan={errorBooking}
           />
@@ -327,22 +330,9 @@ export default function App() {
         </p>
       </footer>
       <nav className="nav-mobile" aria-label="Navigasi seluler">
-        <a aria-current={jalur === "/" ? "page" : undefined} href="#/">
-          <Ikon nama="rumah" />
-          Beranda
-        </a>
-        <a
-          aria-current={jalur === "/layanan" ? "page" : undefined}
-          href="#/layanan"
-        >
-          <Ikon nama="layanan" />
-          Layanan
-        </a>
-        <a aria-current={jalur === "/booking" || Boolean(pribadi) ? "page" : undefined} href="#/booking">
-          <Ikon nama="kalender" />
-          Booking
-        </a>
-        <a href="#/lacak" aria-current={jalur==="/lacak"?"page":undefined}><Ikon nama="perisai"/>Lacak</a>
+        <a aria-current={jalur==="/"||jalur==="/layanan"?"page":undefined} href="#/"><Ikon nama="rumah"/>Beranda</a>
+        <a aria-current={jalur==="/booking"?"page":undefined} href="#/booking"><Ikon nama="kalender"/>Booking</a>
+        <a aria-current={jalur==="/lacak"||Boolean(pribadi)?"page":undefined} href="#/lacak"><Ikon nama="perisai"/>Cek Status</a>
       </nav>
     </>
   );
