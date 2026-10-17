@@ -1,3 +1,4 @@
+import { pesanKoneksiGuest, pesanKegagalanGuest } from "./kesalahan-guest";
 export type RingkasanTamu = {
   bebasDp?: boolean; syaratDpTerpenuhi?: boolean;
   subtotal: number;
@@ -88,26 +89,10 @@ async function permintaan<T>(
     });
   } catch {
     throw new Error(
-      "Hasil permintaan belum dapat dipastikan. Periksa koneksi dan status sebelum mencoba kembali.",
+      pesanKoneksiGuest,
     );
   }
-  if (!hasil.ok) {
-    const pesan =
-      hasil.status === 503
-        ? "Booking online sedang tidak tersedia. Silakan coba lagi nanti atau hubungi Admin."
-        : hasil.status === 403
-        ? "Permintaan tidak diizinkan. Buka aplikasi dari alamat resminya dan coba lagi."
-        : hasil.status === 404
-        ? "Kode booking tidak ditemukan atau tidak valid."
-        : hasil.status === 429
-          ? "Terlalu banyak percobaan. Tunggu beberapa saat."
-          : hasil.status === 409
-            ? "Permintaan berbenturan dengan status atau kapasitas saat ini. Perbarui status; jangan membuat pembayaran ganda."
-            : hasil.status === 400
-              ? "Data atau jadwal tidak valid. Gunakan jam 09.00–23.00 WIB, maksimal 14 hari, minimal 3 jam untuk hari ini."
-              : "Layanan booking belum tersedia atau status belum dapat dipastikan. Periksa kembali nanti.";
-    throw new KesalahanGuest(hasil.status,pesan);
-  }
+  if (!hasil.ok) throw new KesalahanGuest(hasil.status, await pesanKegagalanGuest(hasil));
   return hasil.json() as Promise<T>;
 }
 export class KesalahanGuest extends Error { constructor(public status:number,pesan:string){super(pesan)} }

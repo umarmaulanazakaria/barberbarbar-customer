@@ -1,3 +1,4 @@
+import { pesanKoneksiGuest, pesanKegagalanGuest } from "./kesalahan-guest";
 export type SlotWeb = { tanggal: string; serverTime: string; slotMenit: number; barber: { id: number; nama: string }[]; slot: { mulaiPada: string; selesaiPada: string; barberId: number[] }[] };
 export type RencanaWeb = { nomorMember?: string; barberPilihanId: number; mulaiPada: string; items: { layananId: number; qty: number }[] };
 export type KutipanWeb = { items: { layananId: number; nama: string; qty: number; harga: number; subtotal: number }[]; subtotal: number; diskonMember: number; total: number; nominalDp: number; sisaSetelahDp: number; bebasDp: boolean; barber: { id: number; nama: string } | null; mulaiPada: string; selesaiPada: string; slotMenit: number };
@@ -10,9 +11,12 @@ async function baca<T>(jalur: string, body?: unknown, signal?: AbortSignal): Pro
   const timer = setTimeout(batal, 15000);
   try {
     const res = await fetch(url, { method: body ? "POST" : "GET", signal: kontrol.signal, cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer", headers: { Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    if (!res.ok) throw Error(await pesanKegagalanGuest(res));
     const data: unknown = await res.json();
-    if (!res.ok) throw Error(res.status === 429 ? "Terlalu banyak percobaan. Tunggu sebelum memeriksa kembali." : data && typeof data === "object" && "pesan" in data && typeof data.pesan === "string" ? data.pesan : "Rencana Booking belum dapat diverifikasi.");
     return data as T;
+  } catch (e) {
+    if (e instanceof TypeError || kontrol.signal.aborted) throw Error(pesanKoneksiGuest);
+    throw e;
   } finally { clearTimeout(timer); signal?.removeEventListener("abort", batal); }
 }
 export async function ambilSlotWeb(tanggal: string, signal?: AbortSignal) {
