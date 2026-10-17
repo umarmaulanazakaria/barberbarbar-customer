@@ -15,6 +15,7 @@ import { buatKunciIdempotensi } from "../layanan/idempotensi";
 import { salinAtauPilihKode } from "../layanan/salin";
 import { Ikon } from "./Ikon";
 import "../tracking.css";
+import DetailInvoice from "./DetailInvoice";
 import RingkasanPembayaran, { bookingDikonfirmasi } from "./RingkasanPembayaran";
 
 const labelStatus: Record<string, string> = {
@@ -53,6 +54,7 @@ export default function BookingTamu({
   const [sekarang, aturSekarang] = useState(Date.now),
     [sibuk, aturSibuk] = useState(false);
   const [invoiceDisahkan, aturInvoiceDisahkan] = useState(false);
+  const [ulangiInvoice, aturUlangiInvoice] = useState(0);
   const urutan = useRef(0),
     versiAkses = useRef(0),
     kunci = useRef(false),
@@ -125,7 +127,7 @@ export default function BookingTamu({
     };
   }, [muat, halaman]);
   useEffect(() => {
-    if (halaman !== "invoice") return;
+    if (halaman !== "invoice" || !data) return;
     let aktif = true;
     const versi = versiAkses.current;
     aturInvoiceDisahkan(false);
@@ -148,7 +150,7 @@ export default function BookingTamu({
     return () => {
       aktif = false;
     };
-  }, [halaman, simpan, data?.ringkasan.invoice?.nomorInvoice]);
+  }, [halaman, simpan, data?.booking.nomorBooking, data?.ringkasan.invoice?.nomorInvoice, ulangiInvoice]);
   const bukaSnap = async () => {
     if (kunci.current || !data) return;
     kunci.current = true;
@@ -227,6 +229,7 @@ export default function BookingTamu({
         <p role={error ? "alert" : "status"}>
           {error || "Memuat booking pada browser ini..."}
         </p>
+        {error && <p>Jika sesi browser berakhir, masukkan kembali kode tracking Anda. Jika kode hilang, hubungi Admin untuk verifikasi identitas.</p>}
         <button className="tombol utama" onClick={() => void muat()}>
           Perbarui status
         </button>
@@ -244,6 +247,8 @@ export default function BookingTamu({
     b.status === "COMPLETED" && u.statusPembayaran === "PAID" && !!u.invoice;
 
   if (["ringkasan", "pembayaran"].includes(halaman)) return <RingkasanPembayaran data={data} halaman={halaman === "pembayaran" ? "pembayaran" : "ringkasan"} sekarang={sekarang} sibuk={sibuk} error={error} pesan={pesan} kode={kode} labelStatus={labelStatus} bayar={bukaSnap} perbarui={muat} salin={salin}/>;
+
+  if (["detail", "invoice"].includes(halaman)) return <DetailInvoice data={data} halaman={halaman === "invoice" ? "invoice" : "detail"} invoiceDisahkan={invoiceDisahkan} error={error} pesan={pesan} kode={kode} sibuk={sibuk} labelStatus={labelStatus} sekarang={sekarang} perbarui={async () => { const hasil = await muat(); if (hasil && halaman === "invoice") aturUlangiInvoice(n => n + 1); }} salin={salin}/>;
 
   return (
     <div className="halaman-pratinjau">

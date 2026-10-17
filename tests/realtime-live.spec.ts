@@ -1,5 +1,36 @@
 import { test, expect } from "@playwright/test";
 
+test("Isolasi Customer A dan B: REST, detail, room realtime dan invoice",async({browser,baseURL})=>{
+  const asal=baseURL!,fixture="http://127.0.0.1:3185",a=await browser.newContext(),b=await browser.newContext();
+  try {
+    const layanan=await (await a.request.get(asal+"/api/public/services")).json() as {id:number}[];
+    const nomor:string[]=[];
+    for(const [i,c] of [a,b].entries()){
+      const hari=new Date(Date.now()+7*3600000+(10+i)*86400000).toISOString().slice(0,10);
+      const r=await c.request.post(asal+"/api/guest/bookings/session",{headers:{Origin:asal},data:{nama:i===0?"Pelanggan Isolasi A":"Pelanggan Isolasi B",nomorTelepon:i===0?"081234567891":"081234567892",mulaiPada:hari+"T14:00:00+07:00",items:[{layananId:layanan[0].id,qty:1}],kunciIdempotensi:crypto.randomUUID()}});
+      expect(r.status()).toBe(201);nomor.push((await r.json()).booking.nomorBooking);
+    }
+    const pa=await a.newPage(),pb=await b.newPage();
+    // Hilangkan polling hanya di pengujian ini untuk membuktikan isolasi event.
+    await pb.addInitScript(()=>{const interval=window.setInterval.bind(window);window.setInterval=(h,t,...args)=>interval(t===10000?()=>{}:h,t,...args);});
+    let bacaB=0;pb.on("request",r=>{if(r.url().includes("/session/current"))bacaB++;});
+    await pa.goto(asal+"/#/kunjungan/detail");await pb.goto(asal+"/#/kunjungan/detail");
+    await expect(pa.getByTestId("nomor-booking")).toHaveText(nomor[0]);await expect(pb.getByTestId("nomor-booking")).toHaveText(nomor[1]);
+    await expect(pa.getByText("Pelanggan Isolasi B",{exact:true})).toHaveCount(0);await expect(pb.getByText("Pelanggan Isolasi A",{exact:true})).toHaveCount(0);
+    await expect.poll(async()=> (await (await a.request.get(fixture+"/__fixture/socket/audit")).json()).guests).toBe(2);
+    await pb.waitForTimeout(350);const awal=bacaB;
+    // Parameter identitas publik tidak dapat mengganti booking milik sesi B.
+    const current=await (await b.request.get(asal+"/api/guest/bookings/session/current?nomorBooking="+encodeURIComponent(nomor[0]))).json();expect(current.booking.nomorBooking).toBe(nomor[1]);
+    expect((await a.request.post(asal+"/api/guest/bookings/session/checkout",{headers:{Origin:asal},data:{tujuan:"DP",kunciIdempotensi:crypto.randomUUID()}})).status()).toBe(200);
+    const cookie=(await a.cookies()).find(c=>c.name==="bb_guest_session")!;
+    expect((await a.request.post(fixture+"/__fixture/settle",{headers:{Cookie:"bb_guest_session="+cookie.value}})).status()).toBe(200);
+    await expect(pa.getByTestId("status-booking")).toHaveText("Booking dikonfirmasi");await pb.waitForTimeout(500);
+    await expect(pb.getByTestId("status-booking")).toHaveText("Menunggu pembayaran DP");expect(bacaB).toBe(awal);
+    const invoice=await b.request.get(asal+"/api/guest/bookings/session/invoice");expect(invoice.status()).toBe(409);expect(await invoice.text()).not.toContain(nomor[0]);
+    await expect(pb.getByTestId("nomor-invoice")).toHaveCount(0);
+  } finally {await a.close();await b.close();}
+});
+
 // Wajib server serve-guest-browser.mjs: guard database fixture dan provider MOCK.
 test("Realtime guest: settlement, Staff, fallback, reconnect, invoice dan pencabutan sesi", async ({ page, context, browser }) => {
   const fixture = "http://127.0.0.1:3185";
@@ -81,9 +112,10 @@ test("Realtime guest: settlement, Staff, fallback, reconnect, invoice dan pencab
   await expect(page.getByTestId("nomor-invoice")).toHaveCount(0);
   await post("settle");
   await expect(page.getByTestId("nomor-invoice")).toHaveText(/^INV-BKG-/, {timeout:5000});
-  await expect(page.getByRole("link", { name: "Lihat invoice final" })).toBeVisible({timeout:5000});
+  await expect(page.getByRole("article", { name: "Invoice final" })).toContainText("Lunas", {timeout:5000});
   await expect(rowAdmin).toContainText("Pembayaran Berhasil", {timeout:5000});
   await post("settle"); // replay tidak mengkredit dua kali
+  await page.getByRole("link", { name: "Detail", exact: true }).click();
   await page.getByRole("link", { name: "Lihat invoice final" }).click();
   await expect(page.getByTestId("nomor-invoice")).toHaveText(/^INV-BKG-/);
   expect(await (await context.request.get(fixture + "/__fixture/audit")).json()).toEqual({creditCount:2,invoiceCount:1});

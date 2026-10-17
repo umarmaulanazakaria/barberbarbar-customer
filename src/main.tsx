@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./style.css";
 import "./mobile-ux.css";
+import "./detail-ux.css";
 const Halaman = import.meta.env.MODE === "test" ? lazy(() => import("../tests/fixtures/AppPratinjau")) : App;
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
