@@ -24,7 +24,7 @@ export default function DetailInvoice({ data, halaman, invoiceDisahkan, error, p
     {nama:"Pelayanan selesai",waktu:b.layananSelesaiPada},
   ].filter((k): k is {nama:string;waktu:string} => !!k.waktu);
   const layanan=<ul className="detail-layanan">{b.items.map(i=><li key={i.layananId}>
-    <div><h3>{i.namaLayanan}</h3><p>{i.qty} × {rupiah(i.harga)} <span>· {i.durasiMenit} menit / layanan</span></p></div>
+    <div><h3>{i.namaLayanan}</h3><p>{i.qty} × {rupiah(i.harga)}</p></div>
     <strong>{rupiah(i.subtotal)}</strong>
   </li>)}</ul>;
   const riwayat=<section className="panel" aria-labelledby="judul-riwayat-pembayaran">

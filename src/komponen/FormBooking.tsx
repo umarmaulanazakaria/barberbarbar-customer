@@ -204,7 +204,7 @@ export default function FormBooking({
                     <span>
                       <strong>{l.nama}</strong>
                       <small>
-                        {l.durasiMenit} menit · {rupiah(l.harga)}
+                        {rupiah(l.harga)}
                       </small>
                     </span>
                   </label>
@@ -323,7 +323,7 @@ export default function FormBooking({
           </div>
           <dl className="nilai-ringkas">
             <div>
-              <dt>Estimasi durasi</dt>
+              <dt>Slot Booking</dt>
               <dd>{ringkas.durasi} menit</dd>
             </div>
             <div>

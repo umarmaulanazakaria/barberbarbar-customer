@@ -11,7 +11,7 @@ export function bacaLayanan(data: unknown): Layanan[] {
       !Number.isSafeInteger(p.harga) || p.harga < 0 || typeof p.durasiMenit !== 'number' ||
       !Number.isSafeInteger(p.durasiMenit) || p.durasiMenit <= 0) throw new Error('Data layanan belum lengkap.');
     id.add(p.id);
-    return { id: p.id, nama: p.nama, harga: p.harga, durasiMenit: p.durasiMenit };
+    return { id: p.id, nama: p.nama, harga: p.harga, durasiMenit: p.durasiMenit, ...(typeof p.slotBookingMenit === "number" && Number.isSafeInteger(p.slotBookingMenit) && p.slotBookingMenit > 0 ? { slotBookingMenit: p.slotBookingMenit } : {}) };
   });
 }
 export async function ambilLayanan(sinyal?: AbortSignal): Promise<Layanan[]> {

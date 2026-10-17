@@ -1,4 +1,4 @@
-export type Layanan = { id: number; nama: string; harga: number; durasiMenit: number };
+export type Layanan = { id: number; nama: string; harga: number; durasiMenit: number; slotBookingMenit?: number };
 export type PilihanLayanan = { layanan: Layanan; jumlah: number };
 export type DrafBooking = {
   nomorMember?: string; nama: string; telepon: string; tanggal: string; jam: string; pilihan: PilihanLayanan[] };
@@ -18,7 +18,9 @@ export function normalisasiTelepon(nilai: string) {
 }
 export function estimasi(pilihan: PilihanLayanan[]) {
   const total = pilihan.reduce((n, p) => n + p.layanan.harga * p.jumlah, 0);
-  const durasi = pilihan.reduce((n, p) => n + p.layanan.durasiMenit * p.jumlah, 0);
+  const durasi = pilihan.length && pilihan[0]?.layanan.slotBookingMenit
+    ? pilihan[0].layanan.slotBookingMenit
+    : pilihan.reduce((n, p) => n + p.layanan.durasiMenit * p.jumlah, 0);
   return { total, dp: Math.ceil(total / 2), durasi };
 }
 export function validasiDraf(d: DrafBooking, sekarang = Date.now()): KesalahanForm {

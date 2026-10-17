@@ -86,7 +86,7 @@ export function Katalog({ sumber }: { sumber: SumberKatalog }) {
             </div>
             <h3>{l.nama}</h3>
             <p className="durasi">
-              <Ikon nama="jam" ukuran={15} /> {l.durasiMenit} menit
+              <Ikon nama="jam" ukuran={15} /> {l.slotBookingMenit ? "Slot Booking " : ""}{l.slotBookingMenit ?? l.durasiMenit} menit
             </p>
             <div className="bawah-layanan">
               <strong>{rupiah(l.harga)}</strong>
