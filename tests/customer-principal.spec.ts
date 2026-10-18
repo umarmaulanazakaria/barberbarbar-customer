@@ -40,9 +40,9 @@ test("Customer utama: delapan viewport, otoritas pembayaran, tracking dan invoic
     const p = new URL(r.request().url()).pathname;
     if (p === "/api/public/services") return r.fulfill({ json: katalog });
     if (p === "/api/public/booking-availability") return r.fulfill({ json: { tersedia: true } });
-    if (p.endsWith("/session/current") || p.endsWith("/session/sync")) return r.fulfill({ json: data });
+    if (p.endsWith("/session/current") || p.endsWith("/session/sync")) return r.fulfill({ json: { ...data, serverTime: new Date().toISOString() } });
     if (p.endsWith("/session/tracking")) return r.fulfill({ json: { kode: data.ringkasan.dpTerverifikasi ? kode : null } });
-    if (p.endsWith("/session/invoice")) return r.fulfill({ json: { ...data, invoice: data.ringkasan.invoice } });
+    if (p.endsWith("/session/invoice")) return r.fulfill({ json: { ...data, serverTime: new Date().toISOString(), invoice: data.ringkasan.invoice } });
     takDikenal.push(p);
     return r.abort();
   });

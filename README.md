@@ -6,9 +6,9 @@ Aplikasi customer aktif memakai React 19, TypeScript, Vite dan Socket.IO. Custom
 
 Tiga aplikasi memakai satu API Express/Prisma dan PostgreSQL yang sama. Admin memakai desain **Admin Minimal**, Customer memakai **mobile-first**, Staff memakai **Minimal V3**. Harga, slot, kelayakan Member, keputusan operasional dan pembayaran ditetapkan backend. Socket.IO hanya memberi sinyal refetch REST.
 
-- [Admin Web dan Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/feature/project5-integration)
-- [React Native Staff](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/feature/project5-integration)
-- [Customer Web](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/feat/project5-react-web-mobile-first)
+- [Admin Web dan Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/main)
+- [React Native Staff](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/main)
+- [Customer Web](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/main)
 
 ## Fitur mobile-first
 
@@ -66,6 +66,10 @@ Audit terbaru: build snapshot commit dan working tree lulus; suite Customer utam
 
 ## Batas verifikasi
 
-Audit 18 Oktober 2026 memisahkan snapshot commit dari WIP lokal. TypeScript / build bukan bukti seluruh alur UI atau pembayaran provider. Lihat [laporan audit pusat](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/audit/AUDIT-SISTEM-TERKINI.md). Pengujian integrasi memakai PostgreSQL fixture dan provider mock; bukan settlement Sandbox baru. Perangkat Android/iOS dan printer fisik belum diuji dalam audit ini. Advisory dependency masih terbuka. **Belum siap dinyatakan rilis penuh; bukan Production.**
+Audit 18 Oktober 2026 memisahkan snapshot commit dari WIP lokal. TypeScript / build bukan bukti seluruh alur UI atau pembayaran provider. Lihat [laporan audit pusat](https://github.com/umarmaulanazakaria/barberbarbar/blob/main/docs/audit/AUDIT-SISTEM-TERKINI.md). Pengujian integrasi memakai PostgreSQL fixture dan provider mock; bukan settlement Sandbox baru. Perangkat Android/iOS dan printer fisik belum diuji dalam audit ini. Advisory dependency masih terbuka. **Belum siap dinyatakan rilis penuh; bukan Production.**
 
 [Kontrak dan catatan integrasi terbaru](docs/INTEGRASI-TERKINI.md). Bukti settlement historis tetap di dokumentasi backend; tidak diklaim sebagai pengujian provider baru atau seluruh kontrak Member terbaru. Source Native lama bukan target pengembangan aktif dan riwayat/arsip historis tidak dihapus dalam audit ini.
+
+## Versi demo pada main
+
+Branch `main` memuat snapshot fitur terbaru yang digabungkan dengan tetap mempertahankan riwayat. Verifikasi rilis memakai build/TypeScript dan fixture/mock lokal; tidak membuat transaksi nyata atau mengubah data operasional. Jalankan demo dengan konfigurasi lokal dan Midtrans Sandbox existing. Pengujian perangkat HP, printer fisik dan pembayaran provider langsung tidak diklaim lulus dari pengujian ini. WIP lokal tetap terpisah dari versi GitHub.
