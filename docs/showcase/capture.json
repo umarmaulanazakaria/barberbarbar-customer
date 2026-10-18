@@ -1,0 +1,68 @@
+{
+  "capturedOn": "2026-10-18",
+  "runtime": "Chrome browser, real application components",
+  "dataSource": "intercepted synthetic API responses; no database/provider",
+  "visualReview": true,
+  "files": [
+    {
+      "file": "hero.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "bytes": 117143,
+      "sha256": "e4a3bfe3526a87f2bb820d6b98b08bd79b24b29d5cae49f66ed63f8836b1fa79"
+    },
+    {
+      "file": "katalog.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 40366,
+      "sha256": "24c55882612c7b00faef7689bb9f81385cfce16b551cc6ae42e8e92321a598b9"
+    },
+    {
+      "file": "pilih-layanan.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 44611,
+      "sha256": "8dbafd4eb19efdbde36904235e4eb89bc9354fba00488a8ca794f277b215742a"
+    },
+    {
+      "file": "booking.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 47720,
+      "sha256": "026a0509b054f7ba690d32437ebb3aa9207840b8d6a2fce84ba01aebd57953ab"
+    },
+    {
+      "file": "pembayaran.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 52008,
+      "sha256": "03e94259e860ac4727ab507e0ec52152770d9f4e5e09f687046c0949b75cba7e"
+    },
+    {
+      "file": "tracking.jpg",
+      "sourceCommit": "351d264ac902144a67a62baf003bcf5d14a44648",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "bytes": 47739,
+      "sha256": "b17f06588b4c46c55b73981334a3a5df337eff6f43e6226c757835db12a47ff0"
+    }
+  ]
+}

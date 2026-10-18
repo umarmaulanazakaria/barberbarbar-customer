@@ -1,25 +1,82 @@
-# BARBER BARBAR — Customer Web
+<div align="center">
 
-Aplikasi customer aktif memakai React 19, TypeScript, Vite dan Socket.IO. Customer mengakses dari browser desktop atau HP; tidak memerlukan runtime React Native. Nama repository GitHub tetap barberbarbar-customer.
+# BARBER BARBAR
 
-## Arsitektur
+**Not Cutting Heads, Just Hair.**
 
-Tiga aplikasi memakai satu API Express/Prisma dan PostgreSQL yang sama. Admin memakai desain **Admin Minimal**, Customer memakai **mobile-first**, Staff memakai **Minimal V3**. Harga, slot, kelayakan Member, keputusan operasional dan pembayaran ditetapkan backend. Socket.IO hanya memberi sinyal refetch REST.
+### Customer Web · mobile-first
 
-- [Admin Web dan Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/main)
-- [React Native Staff](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/main)
-- [Customer Web](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/main)
+Pilih layanan, rencanakan kunjungan dan pantau booking dari browser. Tanpa instal aplikasi.
 
-## Fitur mobile-first
+[Admin & Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/main) · [Staff Mobile](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/main) · [Customer Web](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/main)
 
-- Katalog layanan aktif melalui API publik, tanpa login.
-- Wizard Layanan → Barber → Jadwal → Identitas/Member → Checkout.
-- Slot berasal dari backend: satu booking 45 menit, tidak dikalikan qty layanan.
-- Reguler mengisi nama/HP dan membayar DP 50% dalam 15 menit.
-- Member memasukkan nomor numerik atau legacy tanpa mengetik nama/HP. Backend memeriksa masa berlaku, manfaat dan batas booking gratis aktif; verifikasi Kartu Member + KTP dilakukan di toko.
-- Nomor booking, sesi privat HttpOnly dan kode tracking rahasia.
-- Pembayaran Snap Sandbox, status backend, deadline aktual, pelunasan dan invoice final.
-- Realtime scoped sesi dengan fallback REST/polling; tidak menjadikan event/callback sebagai bukti lunas.
+</div>
+
+<a href="docs/showcase/hero.jpg"><img src="docs/showcase/hero.jpg" alt="Beranda Customer Web terbaru pada browser desktop" width="1200" /></a>
+
+*Customer aktif adalah React Web mobile-first; bukan aplikasi React Native Customer.*
+
+> **Tentang gambar:** screenshot diambil ulang dari aplikasi pada source `main` tanggal 18 Oktober 2026. Seluruh respons API untuk capture diintersepsi dengan data sintetis. Tidak ada database atau provider pembayaran yang dihubungi. Status dan nominal contoh adalah ilustrasi UI, **bukan bukti settlement Midtrans**. Tidak ada rekayasa DOM, mockup desain, gambar AI, atau data pelanggan asli. Klik gambar untuk melihat ukuran penuh.
+
+## Dari genggaman sampai kursi barber
+
+| <a href="docs/showcase/katalog.jpg"><img src="docs/showcase/katalog.jpg" alt="Katalog Customer pada viewport HP" width="320" /></a> | <a href="docs/showcase/pilih-layanan.jpg"><img src="docs/showcase/pilih-layanan.jpg" alt="Pemilihan layanan pada wizard booking" width="320" /></a> |
+| --- | --- |
+| **Katalog** — layanan dan harga dalam tampilan mobile-first. | **Pilih layanan** — atur pilihan sebelum memilih barber dan jadwal. |
+
+| <a href="docs/showcase/booking.jpg"><img src="docs/showcase/booking.jpg" alt="Detail booking Customer dengan data sintetis" width="320" /></a> | <a href="docs/showcase/pembayaran.jpg"><img src="docs/showcase/pembayaran.jpg" alt="Halaman DP Customer belum dibayar" width="320" /></a> |
+| --- | --- |
+| **Booking pribadi** — nomor booking, jadwal dan rincian kunjungan. | **DP online** — nominal dan deadline dari respons backend; tombol Snap mengikuti status booking. |
+
+<a href="docs/showcase/tracking.jpg"><img src="docs/showcase/tracking.jpg" alt="Form tracking kosong tanpa kode rahasia" width="320" /></a>
+
+**Tracking privat** — form asli ditampilkan kosong agar kode akses tidak dipublikasikan.
+
+[Asal gambar, versi dan batas capture](docs/showcase/README.md).
+
+## Tiga aplikasi, satu backend
+
+| Aplikasi | Peran |
+| --- | --- |
+| [Admin Web & Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/main) | Dashboard operasional, pelanggan, Membership, pesanan, kasir dan laporan. |
+| [React Native Staff](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/main) | Pelayanan di toko dengan desain Minimal V3: Beranda, Pesanan, Walk-in, Riwayat dan Profil. |
+| [Customer Web mobile-first](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/main) | Katalog, booking tanpa akun, pembayaran dan tracking dari browser HP maupun desktop. |
+
+Ketiganya memakai **Express REST API + Prisma + PostgreSQL** yang sama. Socket.IO memberi sinyal untuk mengambil ulang data REST; harga, kelayakan Member dan status pembayaran tetap ditetapkan backend.
+
+## Dari booking sampai layanan selesai
+
+| Alur | Ringkasan |
+| --- | --- |
+| Booking Reguler | Pilih layanan, barber dan jadwal; isi identitas tanpa membuat akun. Satu booking memakai slot **45 menit**. |
+| DP & konfirmasi | **DP 50%**, batas **15 menit** dari backend. Snap Sandbox bukan penentu status; backend memverifikasi provider sebelum booking dikonfirmasi. |
+| Membership | Paket aktif 12 bulan: Haircut + Wash gratis dan layanan lain diskon 10% sesuai kelayakan backend. Booking Member layak tanpa DP; Kartu Member + KTP diperiksa fisik di toko tanpa menyimpan NIK/foto. |
+| Walk-in | Operator membuat pesanan Reguler/Member dari toko, memakai quote dan validasi backend yang sama. |
+| Pelayanan & pembayaran | Check-in, barber final, pelayanan, selesai, pelunasan sesuai saldo backend, lalu invoice final. Tunai, Transfer dan QRIS mengikuti workflow operator; Snap untuk pembayaran online customer. |
+
+## Teknologi
+
+**React 19 · TypeScript · Vite 7 · Socket.IO Client · Fetch API · Midtrans Snap melalui backend**
+
+## Mulai lokal
+
+Dengan backend aktif pada port 3000:
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+Buka **http://localhost:5175**. Untuk HP pada Wi-Fi yang sama, gunakan **http://IP_LAPTOP:5175**. Proxy development `/api` dan `/socket.io` mengarah ke backend; Server Key tidak pernah diletakkan di browser. Rincian konfigurasi ada pada panel teknis berikut.
+
+## Bukti pengujian dan batas
+
+Build/TypeScript dan suite Customer utama pada **delapan viewport** lulus saat finalisasi `main`; seluruh API suite UI diintersepsi. Integrasi backend diuji terpisah dengan database fixture dan provider mock. Gambar ini bukan bukti Android native atau pembayaran provider nyata. Capture tidak mengklik pembayaran, menerbitkan kode tracking atau membuat booking di database.
+
+**Demo tugas magang dengan batas yang terdokumentasi; bukan klaim Production.**
+
+<details>
+<summary><strong>Instalasi, konfigurasi, struktur source dan laporan teknis</strong></summary>
 
 ## Struktur
 
@@ -73,3 +130,5 @@ Audit 18 Oktober 2026 memisahkan snapshot commit dari WIP lokal. TypeScript / bu
 ## Versi demo pada main
 
 Branch `main` memuat snapshot fitur terbaru yang digabungkan dengan tetap mempertahankan riwayat. Verifikasi rilis memakai build/TypeScript dan fixture/mock lokal; tidak membuat transaksi nyata atau mengubah data operasional. Jalankan demo dengan konfigurasi lokal dan Midtrans Sandbox existing. Pengujian perangkat HP, printer fisik dan pembayaran provider langsung tidak diklaim lulus dari pengujian ini. WIP lokal tetap terpisah dari versi GitHub.
+
+</details>
