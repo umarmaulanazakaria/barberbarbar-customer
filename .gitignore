@@ -9,3 +9,11 @@ playwright-report/
 test-results/
 .expo/
 AGENTS.md
+
+# Rahasia dan arsip lokal tidak dipublikasikan.
+*.pem
+*.key
+*.dump
+*.backup
+*.zip
+backups/

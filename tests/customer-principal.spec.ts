@@ -15,8 +15,8 @@ function detail(): DetailTamu {
     booking: {
       nomorBooking: "BB-UJI-WEB", status: "AWAITING_DP",
       mulaiPada: new Date(Date.now() + 86400000).toISOString(),
-      selesaiPada: new Date(Date.now() + 90000000).toISOString(),
-      durasiMenit: 60, dibuatPada: sekarang,
+      selesaiPada: new Date(Date.now() + 86400000 + 45 * 60000).toISOString(),
+      durasiMenit: 45, dibuatPada: sekarang,
       deadlineDp: new Date(Date.now() + 900000).toISOString(),
       deadlinePelunasan: null, barber: null, dikonfirmasiPada: null,
       checkInPada: null, layananMulaiPada: null, layananSelesaiPada: null,
@@ -52,10 +52,11 @@ test("Customer utama: delapan viewport, otoritas pembayaran, tracking dan invoic
       await page.goto("/#" + route);
       await expect(page.locator("h1")).toBeVisible();
       if (route === "/booking") {
-        await expect(page.getByLabel("Nama lengkap")).toBeVisible();
-        await expect(page.getByRole("checkbox")).toHaveCount(2);
-        await expect(page.locator("form select")).toHaveCount(0);
-        await expect(page.locator("form")).not.toContainText(/login|membership|pilih barber/i);
+        await expect(page.getByRole("button", { name: "Tambah Potong Rambut", exact: true })).toBeVisible();
+        await expect(page.getByRole("button", { name: "Tambah Cuci Rambut", exact: true })).toBeVisible();
+        await expect(page.getByLabel("Tahapan Booking")).toContainText("Checkout");
+        await expect(page.getByLabel("Nama lengkap")).toHaveCount(0);
+        await expect(page.getByText("Satu Booking, satu slot 45 menit.", { exact: false })).toBeVisible();
       }
       await expect(page.locator("body")).not.toContainText(/PREVIEW|SIMULASI|Demo UI/);
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

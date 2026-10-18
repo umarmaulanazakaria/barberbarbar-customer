@@ -1,91 +1,71 @@
 # BARBER BARBAR — Customer Web
 
-**Aplikasi Customer utama dan satu-satunya target pengembangan Customer aktif**, memakai React + TypeScript + Vite. Source Native lama diamankan dalam backup privat di luar workspace; riwayat Git dan data pusat tetap dipertahankan. Mobile Staff tetap React Native + Expo. Tidak memakai runtime Expo/React Native Web.
+Aplikasi customer aktif memakai React 19, TypeScript, Vite dan Socket.IO. Customer mengakses dari browser desktop atau HP; tidak memerlukan runtime React Native. Nama repository GitHub tetap barberbarbar-customer.
 
-Keputusan dan audit migrasi: [Customer Web utama](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/CUSTOMER-WEB-UTAMA.md).
+## Arsitektur
 
-## Status aktual
+Tiga aplikasi memakai satu API Express/Prisma dan PostgreSQL yang sama. Admin memakai desain **Admin Minimal**, Customer memakai **mobile-first**, Staff memakai **Minimal V3**. Harga, slot, kelayakan Member, keputusan operasional dan pembayaran ditetapkan backend. Socket.IO hanya memberi sinyal refetch REST.
 
-Alur Web -> backend aktual -> DP Midtrans Sandbox -> konfirmasi otomatis -> operasional -> pelunasan Sandbox -> invoice final telah lulus dengan provider resmi pada booking3745. DP dan pelunasan masing-masing Rp10.000 berstatus settlement; balance Rp0, tepat dua kredit dan satu invoice. Replay webhook tidak menggandakan pembayaran.
+- [Admin Web dan Backend](https://github.com/umarmaulanazakaria/barberbarbar/tree/feature/project5-integration)
+- [React Native Staff](https://github.com/umarmaulanazakaria/barberbarbar-mobile/tree/feature/project5-integration)
+- [Customer Web](https://github.com/umarmaulanazakaria/barberbarbar-customer/tree/feat/project5-react-web-mobile-first)
 
-**Backend kompatibel aktif di port3000 dengan database existing yang sama.**21 migration tersedia (termasuk tracking), tanpa migration ulang. Data existing tetap terlindungi. Booking uji lama yang ditunda sudah CANCELLED tanpa kredit/invoice. Rincian bukti provider, checkpoint dan regresi ada pada laporan backend `server/WEB-FINALIZATION.md`. Perangkat Android belum tersedia; pengujian UI Mobile Staff/Native tetap DEFERRED.
+## Fitur mobile-first
 
-## Menjalankan
+- Katalog layanan aktif melalui API publik, tanpa login.
+- Wizard Layanan → Barber → Jadwal → Identitas/Member → Checkout.
+- Slot berasal dari backend: satu booking 45 menit, tidak dikalikan qty layanan.
+- Reguler mengisi nama/HP dan membayar DP 50% dalam 15 menit.
+- Member memasukkan nomor numerik atau legacy tanpa mengetik nama/HP. Backend memeriksa masa berlaku, manfaat dan batas booking gratis aktif; verifikasi Kartu Member + KTP dilakukan di toko.
+- Nomor booking, sesi privat HttpOnly dan kode tracking rahasia.
+- Pembayaran Snap Sandbox, status backend, deadline aktual, pelunasan dan invoice final.
+- Realtime scoped sesi dengan fallback REST/polling; tidak menjadikan event/callback sebagai bukti lunas.
+
+## Struktur
+
+```text
+src/App.tsx       Routing hash dan entry aplikasi publik
+src/komponen/     Katalog, wizard, detail, pembayaran dan tracking
+src/layanan/      Kontrak HTTP, Snap, idempotensi dan realtime
+src/domain.ts     Tipe, format dan validasi presentasi
+tests/            Tes UI dan kontrak integrasi
+docs/             Panduan dan bukti historis
+```
+
+## Instalasi dan menjalankan
 
 ```powershell
+npm.cmd ci
 npm.cmd run dev
 ```
 
-Buka http://127.0.0.1:5175/. Proxy `/api` menuju backend Project 3 di port3000. Default UI memakai alur guest nyata; API backend memerlukan `GUEST_BOOKING_ENABLED=true` setelah migration. Public katalog tetap `GET /public/services`.
+Customer: http://localhost:5175. Backend harus berjalan di port 3000 dan Admin di 5173. Dari HP gunakan http://IP_LAPTOP:5175 pada jaringan yang sama. Vite bind 0.0.0.0 dan proxy /api serta /socket.io menuju backend; tidak perlu hardcode IP backend di browser atau ADB Reverse. Proxy development bukan konfigurasi deployment.
 
-Variabel publik opsional pada `.env.local` Web saja:
+Environment Web opsional, hanya nilai publik:
 
 ```dotenv
 VITE_API_BASE_URL=/api
 VITE_GUEST_BOOKING_ENABLED=true
 ```
 
-`VITE_*` masuk browser: jangan isi Server Key, credential atau JWT. Jangan menyalin `.env` Native/backend. Backend memakai credential Sandbox existing melalui konfigurasi proses; Client Key publik untuk Snap dikirim backend, bukan di-hardcode.
+Backend mengaktifkan GUEST_BOOKING_ENABLED, kunci tracking dan origin yang sesuai secara privat. Tidak mengisi Server Key pada Web. Client Key publik dan transaksi Snap disediakan backend. Untuk deployment, sediakan reverse proxy/API origin serta WebSocket yang benar dan HTTPS; vite preview bukan server Production.
 
-Aplikasi publik hanya memakai API nyata: tidak menyediakan katalog demo, hasil pratinjau, simulasi pembayaran, atau invoice contoh. Seluruh14 tes awal tetap dipertahankan melalui `tests/fixtures/AppPratinjau.tsx`, yang hanya dimuat pada Vite mode `test`. Build publik tidak menyertakan kontrol atau hasil demo. Menonaktifkan API tidak menghasilkan sukses palsu.
+## Pembayaran dan privasi
 
-Pengujian booking3745 memakai Hair Wash existing Rp20.000, identitas uji, checkout Web resmi dan simulator BCA milik Midtrans Sandbox. Aplikasi publik tidak memiliki tombol simulasi atau sukses palsu. Invoice nyata lulus reload, browser context baru dan lima viewport. Login/daftar operasional/check-in/barber/start/complete diuji melalui API operator existing; tidak diklaim sebagai pengujian perangkat Mobile.
+Harga/DP/balance/deadline berasal dari database. Callback success Snap hanya meminta sinkronisasi; backend harus memverifikasi status provider, referensi dan nominal. CONFIRMED tidak ditetapkan oleh frontend. Invoice final memerlukan syarat backend termasuk penyelesaian dan pelunasan. Simpan kode tracking pribadi; jangan mencantumkannya di screenshot, log, issue atau URL publik. Data demo dan fixture tes tidak menjadi bukti pembayaran nyata. Entry publik tidak menyediakan tombol sukses palsu.
 
-## Alur nyata
-
-1. Pilih layanan/jumlah, tanggal/jam WIB, nama dan nomor HP tanpa login atau pilihan barber.
-2. Submit hanya ID layanan/jumlah/jadwal/data kontak/UUID idempotency. Backend menghitung harga/DP, memeriksa kapasitas dan membuat nomor booking serta token.
-3. Booking baru menggunakan sesi HttpOnly pada browser. Setelah DP sah, simpan kode tracking rahasia. Kode dikirim hanya melalui body POST tracking, bukan URL. Link pribadi lama tetap didukung sebagai kompatibilitas historis.
-4. Countdown menggunakan deadline dan offset waktu server, bukan membuat deadline baru ketika membuka checkout.
-5. Snap Sandbox dimuat hanya setelah klik pembayaran, dengan token pembayaran dari backend. Pending/success/error/close callback hanya memicu pembacaan ulang; bukan bukti lunas.
-6. Backend memverifikasi status provider, mengonfirmasi guest tepat waktu, dan mengirim perubahan kepada Staff. Web menerima Socket.IO melalui sesi HttpOnly; event booking/order/payment dan reconnect memicu refetch REST. Polling 10 detik, foreground dan online recovery tetap aktif sebagai fallback.
-7. Staff memakai endpoint existing untuk check-in, menentukan barber, layanan dan selesai. UI Web membaca item aktual jika layanan diubah.
-8. Pelunasan memakai balance backend; invoice hanya tersedia saat COMPLETED+PAID melalui endpoint privat final.
-
-Guest tidak diberi akun atau membership dari nomor HP. Kode tracking dan akses legacy adalah credential: jangan dibagikan. PII tidak disimpan di storage/cookie browser atau log. URL menggunakan hash dan meta Referrer-Policy no-referrer. Token hanya berupa hash SHA-256 pada backend dan berlaku 30 hari setelah layanan.
-
-Jika respons create hilang, retry mempertahankan UUID agar tidak menggandakan booking; jangan menganggap sesi pasti sudah diterima. Tanpa DP sah, hold berakhir dalam 15 menit. Setelah DP sah, kode tracking dapat memulihkan sesi. Jika kode dan sesi hilang, pemulihan ADMIN wajib verifikasi identitas.
-
-## Pengujian
+## Pemeriksaan
 
 ```powershell
 npm.cmd run typecheck
 npm.cmd run build
-npm.cmd test
-npm.cmd run test:guest
-```
-
-- `npm test`: 14 tes UI lama, mode demo dan API fixture; lima ukuran layar.
-- `test:guest`: browser Chrome existing ke backend aktual di localhost3185 dan PostgreSQL khusus fixture. Tidak mengintersep API booking; Snap.js/provider diganti mock. Backend fixture harus dijalankan dahulu dari source asli backend dengan `scripts/serve-guest-browser.mjs`, hanya pada database bernama `bb_guest_20261016_*`.
-- Test server frontend port5186 menggunakan `BARBER_API_PROXY_TARGET=http://127.0.0.1:3185`; variabel ini hanya konfigurasi Vite development, bukan browser secret.
-- Backend runner fixture harus mengisi DATABASE_URL khusus test, JWT test dan credential merchant dummy. Jangan menjalankan script fixture pada database existing. Jangan mengaktifkan endpoint kontrol fixture pada aplikasi utama; script memisahkan server test dari app.
-
-Dependency tidak ditambah pada pekerjaan integrasi ini. Tidak mengunduh browser. Tidak mengklaim tes perangkat atau provider PASS dari mock.
-
-## File integrasi
-
-Baru: `src/layanan/guest.ts`, `src/layanan/snap.ts`, `src/komponen/BookingTamu.tsx`, `tests/guest-live.spec.ts`, `playwright.guest.config.ts` dan `docs/GUEST-INTEGRATION.md`.
-
-Diubah: App, form existing, façade kontrak, config Vite/Playwright/TypeScript, index referrer policy, environment example, npm script dan dokumentasi. Desain, katalog, validasi, estimasi dan seluruh tes UI awal dipertahankan. `docs/REACT-WEB-AUDIT.md` adalah snapshot UI awal commit5afa3b6.
-
-Customer Web kini repository mandiri pada folder `barberbarbar-customer-web`, branch `feat/project5-react-web-mobile-first`. Repository GitHub existing `umarmaulanazakaria/barberbarbar-customer` memakai React Web pada branch default `main`. Riwayat Native tetap tersimpan dalam Git dan arsip pemulihan; tidak ada repository GitHub tambahan.
-
-## Validasi aplikasi Customer utama
-
-```powershell
 node node_modules/@playwright/test/cli.js test --config playwright.customer-principal.config.ts
 ```
 
-Suite ini membuka UI aplikasi aktual (bukan entry pratinjau), mengintersepsi seluruh API, memeriksa delapan viewport 320?1440 px, status pembayaran, tracking dan invoice. Tidak membuat transaksi provider atau record database. Suite guest/tracking menggunakan backend dan PostgreSQL fixture untuk membuktikan integrasi kontrak. Lint belum dikonfigurasi.
+Audit terbaru: build snapshot commit dan working tree lulus; suite Customer utama lulus delapan viewport dengan seluruh API diintersepsi. Test backend terpisah membuktikan integrasi fixture/provider mock. Suite lama yang mengasumsikan formulir satu halaman atau larangan pilihan barber perlu diselaraskan sebelum digunakan sebagai gerbang rilis.
 
-## Realtime sesi guest
+## Batas verifikasi
 
-`socket.io-client` terpasang sesuai persetujuan. Proxy `/socket.io` dengan WebSocket menuju backend yang sama dengan `/api`; `BARBER_API_PROXY_TARGET` berlaku untuk keduanya. Browser memakai WebSocket agar Origin dapat diverifikasi ketat. Tidak mengirim kode tracking, ID booking, token sesi atau credential melalui auth/query JavaScript; cookie HttpOnly dikirim browser. Backend menentukan room dari sesi dan memeriksa ulang expiry/versi akses. Socket hanya aktif pada halaman booking yang telah memperoleh data melalui REST, dibersihkan ketika keluar, dan tidak diperlukan untuk katalog publik.
+Audit 18 Oktober 2026 memisahkan snapshot commit dari WIP lokal. TypeScript / build bukan bukti seluruh alur UI atau pembayaran provider. Lihat [laporan audit pusat](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/audit/AUDIT-SISTEM-TERKINI.md). Pengujian integrasi memakai PostgreSQL fixture dan provider mock; bukan settlement Sandbox baru. Perangkat Android/iOS dan printer fisik belum diuji dalam audit ini. Advisory dependency masih terbuka. **Belum siap dinyatakan rilis penuh; bukan Production.**
 
-Event hanya meminta pembacaan ulang, bukan bukti settlement. Bila WebSocket diblokir, REST polling tetap berjalan. Saat sesi dicabut, server memutus socket dan REST membersihkan detail/kode/invoice. Server dan proxy deployment harus mendukung upgrade WebSocket pada `/socket.io`; Vite proxy hanya untuk development.
-
-Tes lintas Customer/Admin: `node node_modules/@playwright/test/cli.js test --config playwright.realtime.config.ts`, dengan backend fixture `serve-guest-browser.mjs` di3185, Vite Customer5186 dan Vite Admin5188 (BB_E2E_BACKEND_PORT=3185). Jangan mengarahkan fixture ke database utama. Lihat [audit Socket.IO dan Midtrans](https://github.com/umarmaulanazakaria/barberbarbar/blob/feature/project5-integration/docs/INTEGRASI-SOCKET-MIDTRANS.md).
-
-## Browser HP melalui Wi-Fi
-
-Jalankan `npm.cmd run dev`, buka `http://IP-LAPTOP:5175` pada HP di Wi-Fi yang sama. Host Vite sekarang mengikuti config LAN, tanpa ADB Reverse. Backend tetap diproxy melalui `/api` dan `/socket.io`. Tidak perlu hardcode IP atau menyalin credential ke frontend. UUID memakai fallback getRandomValues pada HTTP LAN; salin tracking memiliki fallback pemilihan manual. [Perbaikan, pengujian dan batas HTTPS](docs/AKSES-HP-LAN.md).
+[Kontrak dan catatan integrasi terbaru](docs/INTEGRASI-TERKINI.md). Bukti settlement historis tetap di dokumentasi backend; tidak diklaim sebagai pengujian provider baru atau seluruh kontrak Member terbaru. Source Native lama bukan target pengembangan aktif dan riwayat/arsip historis tidak dihapus dalam audit ini.
